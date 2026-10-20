@@ -1,4 +1,9 @@
-﻿namespace Screenbox.Core.Enums;
+using System.Text.Json.Serialization;
+
+namespace Screenbox.Core.Enums;
+
+// TODO: Remove the attribute in version 1.0, after giving older versions enough time to migrate away from Protobuf.
+[JsonConverter(typeof(JsonStringEnumConverter<MediaPlaybackType>))]
 public enum MediaPlaybackType
 {
     /// <summary>The media type is unknown.</summary>

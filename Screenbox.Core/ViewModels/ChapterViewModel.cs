@@ -1,19 +1,18 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class ChapterViewModel : ObservableObject
 {
-    public sealed partial class ChapterViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private double _value;
+    [ObservableProperty]
+    public partial double Value { get; set; }
 
-        [ObservableProperty]
-        private double _minimum;
+    [ObservableProperty]
+    public partial double Minimum { get; set; }
 
-        [ObservableProperty]
-        private double _maximum;
+    [ObservableProperty]
+    public partial double Maximum { get; set; }
 
-        [ObservableProperty]
-        private double _width;
-    }
+    [ObservableProperty]
+    public partial double Width { get; set; }
 }

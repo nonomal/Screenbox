@@ -1,365 +1,374 @@
-﻿#nullable enable
-
-using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.AppCenter.Analytics;
-using Screenbox.Core;
-using Screenbox.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
-using Windows.ApplicationModel.Core;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core;
+using Screenbox.Core.Helpers;
+using Screenbox.Core.Models;
+using Screenbox.Core.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using muxc = Microsoft.UI.Xaml.Controls;
 
-namespace Screenbox.Pages
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using NavigationViewBackRequestedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewBackRequestedEventArgs;
+using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
+using NavigationViewDisplayModeChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewDisplayModeChangedEventArgs;
+using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
+
+namespace Screenbox.Pages;
+
+public sealed partial class MainPage : Page, IContentFrame
 {
-    public sealed partial class MainPage : Page, IContentFrame
+    public Type ContentSourcePageType => ContentFrame.SourcePageType;
+
+    public object? FrameContent => ContentFrame.Content;
+
+    public bool CanGoBack => ContentFrame.CanGoBack;
+
+    private MainPageViewModel ViewModel => (MainPageViewModel)DataContext;
+
+    private readonly Dictionary<string, Type> _pages;
+    private readonly ILogger<MainPage> _logger;
+
+    public MainPage()
     {
-        public Type ContentSourcePageType => ContentFrame.SourcePageType;
+        InitializeComponent();
 
-        public object? FrameContent => ContentFrame.Content;
-
-        public bool CanGoBack => ContentFrame.CanGoBack;
-
-        private MainPageViewModel ViewModel => (MainPageViewModel)DataContext;
-
-        private readonly Dictionary<string, Type> _pages;
-
-        public MainPage()
+        _pages = new Dictionary<string, Type>
         {
-            InitializeComponent();
+            { "home", typeof(HomePage) },
+            { "videos", typeof(VideosPage) },
+            { "music", typeof(MusicPage) },
+            { "queue", typeof(PlayQueuePage) },
+            { "network", typeof(NetworkPage) },
+            { "playlists", typeof(PlaylistsPage) },
+            { "settings", typeof(SettingsPage) }
+        };
 
-            // Hide default title bar.
-            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
+        _logger = DefaultLogging.CreateLogger<MainPage>();
+        DataContext = Ioc.Default.GetRequiredService<MainPageViewModel>();
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        ContentFrame.Navigating += ContentFrame_Navigating;
+    }
 
-            LeftPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayLeftInset);
-            RightPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayRightInset);
-
-            // Register a handler for when the size of the overlaid caption control changes.
-            // For example, when the app moves to a screen with a different DPI.
-            coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
-
-            //Register a handler for when the window changes focus
-            Window.Current.CoreWindow.Activated += CoreWindow_Activated;
-
-            NotificationView.Translation = new Vector3(0, 0, 8);
-
-            _pages = new Dictionary<string, Type>
-            {
-                { "home", typeof(HomePage) },
-                { "videos", typeof(VideosPage) },
-                { "music", typeof(MusicPage) },
-                { "queue", typeof(PlayQueuePage) },
-                { "network", typeof(NetworkPage) },
-                { "settings", typeof(SettingsPage) }
-            };
-
-            DataContext = Ioc.Default.GetRequiredService<MainPageViewModel>();
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            ContentFrame.Navigated += ContentFrameOnNavigated;
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        PlayerFrame.Navigate(typeof(PlayerPage), e.Parameter);
+        if (e.Parameter is true)
+        {
+            ViewModel.PlayerVisible = true;
         }
 
-        private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+        // NavView remembers if the pane was open last time
+        ViewModel.IsPaneOpen = NavView.IsPaneOpen;
+    }
+
+    protected override void OnKeyDown(KeyRoutedEventArgs e)
+    {
+        ViewModel.ProcessGamepadKeyDown(e.Key);
+        base.OnKeyDown(e);
+    }
+
+    public void GoBack()
+    {
+        TryGoBack();
+    }
+
+    public void NavigateContent(Type pageType, object? parameter)
+    {
+        ViewModel.PlayerVisible = false;
+        ContentFrame.Navigate(pageType, parameter, new SuppressNavigationTransitionInfo());
+    }
+
+    private void MainPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        Window.Current.Dispatcher.AcceleratorKeyActivated += CoreDispatcher_AcceleratorKeyActivated;
+        SystemNavigationManager.GetForCurrentView().BackRequested += System_BackRequested;
+        Window.Current.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
+        ViewModel.NavigationViewDisplayMode = (Windows.UI.Xaml.Controls.NavigationViewDisplayMode)NavView.DisplayMode;
+        if (!ViewModel.PlayerVisible)
         {
-            // Get the size of the caption controls and set padding.
-            LeftPaddingColumn.Width = new GridLength(sender.SystemOverlayLeftInset);
-            RightPaddingColumn.Width = new GridLength(sender.SystemOverlayRightInset);
+            AppTitleBar.RefreshDragRegion();
+            NavView.SelectedItem = NavView.MenuItems[0];
+            _ = ViewModel.FetchLibraries();
         }
+    }
 
-        // Update the TitleBar based on the inactive/active state of the app
-        private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ViewModel.PlayerVisible))
         {
-            SolidColorBrush defaultForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-            SolidColorBrush inactiveForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorDisabledBrush"];
-
-            if (args.WindowActivationState == CoreWindowActivationState.Deactivated)
-            {
-                AppTitleText.Foreground = inactiveForegroundBrush;
-            }
-            else
-            {
-                AppTitleText.Foreground = defaultForegroundBrush;
-            }
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            PlayerFrame.Navigate(typeof(PlayerPage), e.Parameter);
-            if (e.Parameter is true)
-            {
-                ViewModel.PlayerVisible = true;
-            }
-
-            // NavView remembers if the pane was open last time
-            ViewModel.IsPaneOpen = NavView.IsPaneOpen;
-        }
-
-        protected override void OnKeyDown(KeyRoutedEventArgs e)
-        {
-            base.OnKeyDown(e);
-            ViewModel.ProcessGamepadKeyDown(e);
-        }
-
-        public void GoBack()
-        {
-            TryGoBack();
-        }
-
-        public void NavigateContent(Type pageType, object? parameter)
-        {
-            ViewModel.PlayerVisible = false;
-            ContentFrame.Navigate(pageType, parameter, new SuppressNavigationTransitionInfo());
-        }
-
-        private void SetTitleBar()
-        {
-            Window.Current.SetTitleBar(TitleBarElement);
-            if (ApplicationView.GetForCurrentView()?.TitleBar is { } titleBar)
-            {
-                titleBar.ButtonForegroundColor = null;
-            }
-        }
-
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window.Current.Dispatcher.AcceleratorKeyActivated += CoreDispatcher_AcceleratorKeyActivated;
-            SystemNavigationManager.GetForCurrentView().BackRequested += System_BackRequested;
-            Window.Current.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
-            ViewModel.NavigationViewDisplayMode = (NavigationViewDisplayMode)NavView.DisplayMode;
             if (!ViewModel.PlayerVisible)
             {
-                SetTitleBar();
-                NavView.SelectedItem = NavView.MenuItems[0];
-            }
-
-            if (ApplicationView.GetForCurrentView()?.TitleBar is { } titleBar)
-            {
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                titleBar.InactiveBackgroundColor = Colors.Transparent;
-            }
-        }
-
-        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.PlayerVisible))
-            {
-                if (!ViewModel.PlayerVisible)
+                AppTitleBar.RefreshDragRegion();
+                if (ContentFrame.Content == null)
                 {
-                    SetTitleBar();
-                    if (ContentFrame.Content == null)
-                    {
-                        NavView.SelectedItem = NavView.MenuItems[0];
-                    }
+                    NavView.SelectedItem = NavView.MenuItems[0];
+                    _ = ViewModel.FetchLibraries();
                 }
-
-                UpdateNavigationViewState(NavView.DisplayMode, NavView.IsPaneOpen);
-            }
-        }
-
-        private void ContentFrameOnNavigated(object sender, NavigationEventArgs e)
-        {
-            Analytics.TrackEvent(e.SourcePageType.Name, new Dictionary<string, string>()
-            {
-                {"NavigationMode", e.NavigationMode.ToString()}
-            });
-        }
-
-        private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
-        {
-            throw new Exception("Failed to load Page " + e.SourcePageType.FullName, e.Exception);
-        }
-
-        private void NavView_SelectionChanged(muxc.NavigationView sender, muxc.NavigationViewSelectionChangedEventArgs args)
-        {
-            if (args.IsSettingsSelected)
-            {
-                NavView_Navigate("settings");
-            }
-            else if (args.SelectedItemContainer != null)
-            {
-                var navItemTag = args.SelectedItemContainer.Tag.ToString();
-                NavView_Navigate(navItemTag);
-            }
-        }
-
-        private void NavView_Navigate(string navItemTag)
-        {
-            Type pageType = navItemTag == "settings" ? typeof(SettingsPage) : _pages.GetValueOrDefault(navItemTag);
-            // Get the page type before navigation so you can prevent duplicate
-            // entries in the backstack.
-            Type? preNavPageType = ContentFrame.CurrentSourcePageType;
-
-            // Only navigate if the selected page isn't currently loaded.
-            if (!(pageType is null) && !Type.Equals(preNavPageType, pageType))
-            {
-                ContentFrame.Navigate(pageType, null, new SuppressNavigationTransitionInfo());
-            }
-        }
-
-        private void CoreDispatcher_AcceleratorKeyActivated(CoreDispatcher sender, AcceleratorKeyEventArgs args)
-        {
-            if (args is
-                {
-                    EventType: CoreAcceleratorKeyEventType.SystemKeyDown,
-                    VirtualKey: VirtualKey.Left,
-                    KeyStatus.IsMenuKeyDown: true,
-                    Handled: false
-                })
-            {
-                args.Handled = TryGoBack();
-            }
-        }
-
-        private void System_BackRequested(object sender, BackRequestedEventArgs e)
-        {
-            if (!e.Handled)
-            {
-                e.Handled = TryGoBack();
-            }
-        }
-
-        private void NavView_BackRequested(muxc.NavigationView sender, muxc.NavigationViewBackRequestedEventArgs args)
-        {
-            TryGoBack();
-        }
-
-        private void CoreWindow_PointerPressed(CoreWindow sender, PointerEventArgs e)
-        {
-            // Handle mouse back button.
-            if (e.CurrentPoint.Properties.IsXButton1Pressed)
-            {
-                e.Handled = TryGoBack();
-            }
-        }
-
-        private bool TryGoBack()
-        {
-            // Don't go back if the nav pane is overlayed.
-            if (NavView.IsPaneOpen &&
-                NavView.DisplayMode is muxc.NavigationViewDisplayMode.Compact or muxc.NavigationViewDisplayMode.Minimal)
-                return false;
-
-            if (ViewModel.PlayerVisible && PlayerFrame.Content is PlayerPage { ViewModel: { } vm })
-            {
-                vm.GoBack();
-                return true;
             }
 
-            if (ContentFrame.Content is IContentFrame { CanGoBack: true } page)
+            UpdateNavigationViewState(NavView.DisplayMode, NavView.IsPaneOpen);
+            AppTitleBar.RefreshCaptionButtonColors(); // We invoke it as late as possible to ensure the title bar is visible.
+        }
+    }
+
+    [DynamicWindowsRuntimeCast(typeof(Frame))]
+    private void ContentFrame_Navigating(object sender, NavigatingCancelEventArgs e)
+    {
+        _logger.LogInformation("Navigation requested from {FromPage} to {ToPage} with mode {NavigationMode}.",
+            ((Frame)sender).CurrentSourcePageType?.Name ?? string.Empty,
+            e.SourcePageType?.Name ?? string.Empty,
+            e.NavigationMode);
+    }
+
+    private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
+    {
+        throw new Exception("Failed to load Page " + e.SourcePageType.FullName, e.Exception);
+    }
+
+    private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.IsSettingsSelected)
+        {
+            NavView_Navigate("settings");
+        }
+        else if (args.SelectedItemContainer?.Tag is string navItemTag)
+        {
+            NavView_Navigate(navItemTag);
+        }
+    }
+
+    private void NavView_Navigate(string navItemTag)
+    {
+        Type? pageType = navItemTag == "settings" ? typeof(SettingsPage) : _pages.GetValueOrDefault(navItemTag);
+        // Get the page type before navigation so you can prevent duplicate
+        // entries in the backstack.
+        Type? preNavPageType = ContentFrame.CurrentSourcePageType;
+
+        // Only navigate if the selected page isn't currently loaded.
+        if (!(pageType is null) && !Type.Equals(preNavPageType, pageType))
+        {
+            ContentFrame.Navigate(pageType, null, new SuppressNavigationTransitionInfo());
+        }
+    }
+
+    private void CoreDispatcher_AcceleratorKeyActivated(CoreDispatcher sender, AcceleratorKeyEventArgs args)
+    {
+        if (args is
             {
-                page.GoBack();
-                return true;
-            }
+                EventType: CoreAcceleratorKeyEventType.SystemKeyDown,
+                VirtualKey: VirtualKey.Left,
+                KeyStatus.IsMenuKeyDown: true,
+                Handled: false
+            })
+        {
+            args.Handled = TryGoBack();
+        }
+    }
 
-            if (!ContentFrame.CanGoBack)
-                return false;
+    private void System_BackRequested(object? sender, BackRequestedEventArgs e)
+    {
+        if (!e.Handled)
+        {
+            e.Handled = TryGoBack();
+        }
+    }
 
-            ContentFrame.GoBack();
+    private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+    {
+        TryGoBack();
+    }
+
+    private void CoreWindow_PointerPressed(CoreWindow sender, PointerEventArgs e)
+    {
+        // Handle mouse back button.
+        if (e.CurrentPoint.Properties.IsXButton1Pressed)
+        {
+            e.Handled = TryGoBack();
+        }
+    }
+
+    private bool TryGoBack()
+    {
+        // Don't go back if the nav pane is overlayed.
+        if (NavView.IsPaneOpen &&
+            NavView.DisplayMode is NavigationViewDisplayMode.Compact or NavigationViewDisplayMode.Minimal)
+            NavView.IsPaneOpen = false;
+
+        if (ViewModel.PlayerVisible && PlayerFrame.Content is PlayerPage { ViewModel: { } vm })
+        {
+            vm.GoBack();
             return true;
         }
 
-        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        if (ContentFrame.Content is IContentFrame { CanGoBack: true } page)
         {
-            NavView.IsBackEnabled = ContentFrame.CanGoBack;
-
-            if (ContentFrame.SourcePageType == typeof(SettingsPage))
-            {
-                // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
-                NavView.SelectedItem = (muxc.NavigationViewItem)NavView.SettingsItem;
-            }
-            else if (ContentFrame.SourcePageType != null)
-            {
-                muxc.NavigationViewItem? selectedItem = GetNavigationItemForPageType(e.SourcePageType);
-
-                if (selectedItem == null && ViewModel.TryGetPageTypeFromParameter(e.Parameter, out Type pageType))
-                {
-                    selectedItem = GetNavigationItemForPageType(pageType);
-                }
-
-                NavView.SelectedItem = selectedItem;
-            }
+            page.GoBack();
+            return true;
         }
 
-        private muxc.NavigationViewItem? GetNavigationItemForPageType(Type pageType)
+        if (!ContentFrame.CanGoBack)
+            return false;
+
+        ContentFrame.GoBack();
+        return true;
+    }
+
+    [DynamicWindowsRuntimeCast(typeof(NavigationViewItem))]
+    private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+    {
+        NavView.IsBackEnabled = ContentFrame.CanGoBack;
+
+        if (ContentFrame.SourcePageType == typeof(SettingsPage))
         {
-            KeyValuePair<string, Type> item = _pages.FirstOrDefault(p => p.Value == pageType);
-
-            muxc.NavigationViewItem? selectedItem = NavView.MenuItems
-                .OfType<muxc.NavigationViewItem>()
-                .FirstOrDefault(n => n.Tag.Equals(item.Key));
-
-            return selectedItem;
+            // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
+            NavView.SelectedItem = (NavigationViewItem)NavView.SettingsItem;
         }
-
-        private void NavView_OnDisplayModeChanged(muxc.NavigationView sender, muxc.NavigationViewDisplayModeChangedEventArgs args)
+        else if (ContentFrame.SourcePageType != null)
         {
-            UpdateNavigationViewState(args.DisplayMode, NavView.IsPaneOpen);
-            ViewModel.NavigationViewDisplayMode = (NavigationViewDisplayMode)args.DisplayMode;
-        }
+            NavigationViewItem? selectedItem = GetNavigationItemForPageType(e.SourcePageType);
 
-        private void UpdateNavigationViewState(muxc.NavigationViewDisplayMode displayMode, bool paneOpen)
-        {
-            if (ViewModel.PlayerVisible)
+            if (selectedItem == null && ViewModel.TryGetPageTypeFromParameter(e.Parameter, out Type pageType))
             {
-                VisualStateManager.GoToState(this, "Hidden", true);
-                return;
+                selectedItem = GetNavigationItemForPageType(pageType);
             }
 
-            switch (displayMode)
-            {
-                case muxc.NavigationViewDisplayMode.Minimal:
-                    VisualStateManager.GoToState(this, "Minimal", true);
-                    break;
-                case muxc.NavigationViewDisplayMode.Expanded when paneOpen:
-                    VisualStateManager.GoToState(this, "Expanded", true);
-                    break;
-                case muxc.NavigationViewDisplayMode.Expanded:
-                case muxc.NavigationViewDisplayMode.Compact:
-                    VisualStateManager.GoToState(this, "Compact", true);
-                    break;
-            }
+            NavView.SelectedItem = selectedItem;
+        }
+    }
+
+    private NavigationViewItem? GetNavigationItemForPageType(Type pageType)
+    {
+        KeyValuePair<string, Type> item = _pages.FirstOrDefault(p => p.Value == pageType);
+
+        NavigationViewItem? selectedItem = NavView.MenuItems
+            .OfType<NavigationViewItem>()
+            .FirstOrDefault(n => n.Tag.Equals(item.Key));
+
+        return selectedItem;
+    }
+
+    private void NavView_OnDisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    {
+        UpdateNavigationViewState(args.DisplayMode, NavView.IsPaneOpen);
+        ViewModel.NavigationViewDisplayMode = (Windows.UI.Xaml.Controls.NavigationViewDisplayMode)args.DisplayMode;
+    }
+
+    private void UpdateNavigationViewState(NavigationViewDisplayMode displayMode, bool paneOpen)
+    {
+        if (ViewModel.PlayerVisible)
+        {
+            VisualStateManager.GoToState(this, "Hidden", true);
+            return;
         }
 
-        private void NavView_OnPaneOpening(muxc.NavigationView sender, object args)
+        switch (displayMode)
         {
-            UpdateNavigationViewState(sender.DisplayMode, sender.IsPaneOpen);
+            case NavigationViewDisplayMode.Minimal:
+                VisualStateManager.GoToState(this, "Minimal", true);
+                break;
+            case NavigationViewDisplayMode.Compact when paneOpen:
+                VisualStateManager.GoToState(this, "CompactPaneOverlay", true);
+                break;
+            case NavigationViewDisplayMode.Expanded when paneOpen:
+                VisualStateManager.GoToState(this, "Expanded", true);
+                break;
+            case NavigationViewDisplayMode.Expanded:
+            case NavigationViewDisplayMode.Compact:
+                VisualStateManager.GoToState(this, "Compact", true);
+                break;
+        }
+    }
+
+    private void NavView_OnPaneOpening(NavigationView sender, object args)
+    {
+        UpdateNavigationViewState(sender.DisplayMode, sender.IsPaneOpen);
+    }
+
+    private void NavView_OnPaneClosing(NavigationView sender, object args)
+    {
+        // Deferred to ensure IsPaneOpen reports the correct state
+        // when closing the pane via gamepad.
+        _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+            () => UpdateNavigationViewState(sender.DisplayMode, sender.IsPaneOpen));
+    }
+
+    private void NavViewSearchBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            ViewModel.UpdateSearchSuggestions(sender.Text);
+        }
+    }
+
+    private void NavViewSearchBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    {
+        // Update the text box when navigating through the suggestion list using the keyboard.
+        if (args.SelectedItem is SearchSuggestion suggestion)
+        {
+            // We set sender.Text directly instead of ViewModel.SearchQuery
+            // to avoid triggering TextChanged event.
+            sender.Text = suggestion.Text;
+        }
+    }
+
+    private void NavViewSearchBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion is SearchSuggestion suggestion)
+        {
+            ViewModel.SelectSuggestion(suggestion);
+        }
+        else
+        {
+            ViewModel.SubmitSearch(args.QueryText);
         }
 
-        private void NavView_OnPaneClosing(muxc.NavigationView sender, object args)
+        ViewModel.SearchQuery = string.Empty;
+        ViewModel.SearchSuggestions.Clear();
+        if (NavView.IsPaneOpen && NavView.DisplayMode != NavigationViewDisplayMode.Expanded)
         {
-            UpdateNavigationViewState(sender.DisplayMode, sender.IsPaneOpen);
+            ViewModel.IsPaneOpen = false;
         }
+    }
 
-        private Thickness ToLeftOnlyMargin(double value)
-        {
-            return new Thickness(value, 0, 0, 0);
-        }
+    /// <summary>
+    /// Give the <see cref="NavViewSearchBox"/> text entry box focus ("Focused" visual state) through the keyboard shortcut combination.
+    /// </summary>
+    private void NavViewSearchBoxKeyboardAcceleratorFocus_OnInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        NavViewSearchBox.Focus(FocusState.Keyboard);
+        args.Handled = true;
+    }
 
-        private Thickness GetBackgroundMargin(muxc.NavigationViewDisplayMode mode, bool isPaneOpen)
-        {
-            return mode switch
-            {
-                muxc.NavigationViewDisplayMode.Minimal => new Thickness(0),
-                muxc.NavigationViewDisplayMode.Expanded when !isPaneOpen => new Thickness(NavView.CompactPaneLength, 0, 0, 0),
-                muxc.NavigationViewDisplayMode.Expanded =>
-                    // Right margin to account for Expanded to Compact state transition
-                    new Thickness(NavView.OpenPaneLength, 0, -NavView.OpenPaneLength, 0),
-                muxc.NavigationViewDisplayMode.Compact => new Thickness(NavView.CompactPaneLength, 0, 0, 0),
-                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
-            };
-        }
+    /// <summary>
+    /// Give the <see cref="NavViewSearchBox"/> text entry box focus ("Focused" visual state) through the access key combination.
+    /// </summary
+    private void NavViewSearchBox_OnAccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
+    {
+        NavViewSearchBox.Focus(FocusState.Keyboard);
+        args.Handled = true;
+    }
+
+    private void NavView_DragOver(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        e.AcceptedOperation = DataPackageOperation.Link;
+        if (e.DragUIOverride != null) e.DragUIOverride.Caption = Strings.Resources.Play;
+    }
+
+    private void NavView_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        ViewModel.OnDrop(e.DataView);
     }
 }

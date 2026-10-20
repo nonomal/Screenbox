@@ -1,396 +1,498 @@
-﻿#nullable enable
-
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core.Contexts;
+using Screenbox.Core.Coordinators;
 using Screenbox.Core.Enums;
 using Screenbox.Core.Helpers;
 using Screenbox.Core.Messages;
+using Screenbox.Core.Models;
 using Screenbox.Core.Services;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
+using Windows.Globalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class SettingsPageViewModel : ObservableRecipient
 {
-    public sealed partial class SettingsPageViewModel : ObservableRecipient
+    public PlayerSettingsContext PlayerSettings { get; }
+    public LibrarySettingsContext LibrarySettings { get; }
+    public PlaybackSettingsContext PlaybackSettings { get; }
+    public GeneralSettingsContext GeneralSettings { get; }
+
+    [ObservableProperty] public partial int PlayerAutoResize { get; set; }
+    [ObservableProperty] public partial int VolumeBoost { get; set; }
+    [ObservableProperty] public partial bool ShowRecent { get; set; }
+    [ObservableProperty] public partial int Theme { get; set; }
+    [ObservableProperty] public partial bool SearchRemovableStorage { get; set; }
+    [ObservableProperty] public partial bool AdvancedMode { get; set; }
+    [ObservableProperty] public partial int VideoUpscaling { get; set; }
+    [ObservableProperty] public partial string GlobalArguments { get; set; } = string.Empty;
+    [ObservableProperty] public partial bool IsRelaunchRequired { get; set; }
+    [ObservableProperty] public partial int SelectedLanguage { get; set; }
+    [ObservableProperty] public partial StorageFolder? FrameCaptureFolder { get; set; }
+
+    public ObservableCollection<StorageFolder> MusicLocations { get; }
+
+    public ObservableCollection<StorageFolder> VideoLocations { get; }
+
+    public ObservableCollection<StorageFolder> RemovableStorageFolders { get; }
+
+    public List<LanguageInfo> AvailableLanguages { get; }
+
+    public IReadOnlyList<int> PlayerSeekStepOptions { get; } = new[] { 5, 10, 15, 20, 30 };
+
+    public IReadOnlyList<int> PlayerControlsHideDelayOptions { get; } = new[] { 1, 2, 3, 4, 5 };
+
+    public IReadOnlyList<PlaybackActionKind> GestureOptions { get; } = Enum.GetValues<PlaybackActionKind>();
+
+    private readonly IFilesService _filesService;
+    private readonly LibraryContext _libraryContext;
+    private readonly RecentContext _recentContext;
+    private readonly ILibraryCoordinator _libraryCoordinator;
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly DispatcherQueueTimer _storageDeviceRefreshTimer;
+    private readonly DeviceWatcher? _portableStorageDeviceWatcher;
+    private readonly IPlaybackProgressTracker _playbackProgressTracker;
+    private readonly ILogger<SettingsPageViewModel> _logger;
+    private static InitialValues? _initialValues;
+    private StorageLibrary? _videosLibrary;
+    private StorageLibrary? _musicLibrary;
+
+    private record InitialValues(string GlobalArguments, bool AdvancedMode, int VideoUpscaling, int Language)
     {
-        [ObservableProperty] private int _playerAutoResize;
-        [ObservableProperty] private bool _playerVolumeGesture;
-        [ObservableProperty] private bool _playerSeekGesture;
-        [ObservableProperty] private bool _playerTapGesture;
-        [ObservableProperty] private int _volumeBoost;
-        [ObservableProperty] private bool _useIndexer;
-        [ObservableProperty] private bool _showRecent;
-        [ObservableProperty] private bool _searchRemovableStorage;
-        [ObservableProperty] private bool _advancedMode;
-        [ObservableProperty] private bool _useMultipleInstances;
-        [ObservableProperty] private string _globalArguments;
-        [ObservableProperty] private bool _isRelaunchRequired;
+        public string GlobalArguments { get; } = GlobalArguments;
+        public bool AdvancedMode { get; } = AdvancedMode;
+        public int VideoUpscaling { get; } = VideoUpscaling;
+        public int Language { get; } = Language;
+    }
 
-        public ObservableCollection<StorageFolder> MusicLocations { get; }
+    public SettingsPageViewModel(
+        PlayerSettingsContext playerSettings,
+        LibrarySettingsContext librarySettings,
+        PlaybackSettingsContext playbackSettings,
+        GeneralSettingsContext generalSettings,
+        IFilesService filesService,
+        LibraryContext libraryContext,
+        RecentContext recentContext,
+        ILibraryCoordinator libraryCoordinator,
+        IPlaybackProgressTracker playbackProgressTracker,
+        ILogger<SettingsPageViewModel> logger)
+    {
+        PlayerSettings = playerSettings;
+        LibrarySettings = librarySettings;
+        PlaybackSettings = playbackSettings;
+        GeneralSettings = generalSettings;
+        _filesService = filesService;
+        _libraryContext = libraryContext;
+        _recentContext = recentContext;
+        _libraryCoordinator = libraryCoordinator;
+        _playbackProgressTracker = playbackProgressTracker;
+        _logger = logger;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _storageDeviceRefreshTimer = _dispatcherQueue.CreateTimer();
+        MusicLocations = new ObservableCollection<StorageFolder>();
+        VideoLocations = new ObservableCollection<StorageFolder>();
+        RemovableStorageFolders = new ObservableCollection<StorageFolder>();
 
-        public ObservableCollection<StorageFolder> VideoLocations { get; }
+        IEnumerable<Language> manifestLanguages = ApplicationLanguages.ManifestLanguages.Select(l => new Language(l));
+        AvailableLanguages = manifestLanguages.Select(l => new LanguageInfo(l.NativeName, l.LanguageTag))
+            .OrderBy(l => l.NativeName, StringComparer.CurrentCultureIgnoreCase)
+            .Prepend(new LanguageInfo(string.Empty, string.Empty))
+            .ToList();
 
-        public ObservableCollection<StorageFolder> RemovableStorageFolders { get; }
-
-        private readonly ISettingsService _settingsService;
-        private readonly ILibraryService _libraryService;
-        private readonly DispatcherQueue _dispatcherQueue;
-        private readonly DispatcherQueueTimer _storageDeviceRefreshTimer;
-        private readonly DeviceWatcher? _portableStorageDeviceWatcher;
-        private static string? _originalGlobalArguments;
-        private static bool? _originalAdvancedMode;
-        private StorageLibrary? _videosLibrary;
-        private StorageLibrary? _musicLibrary;
-
-        public SettingsPageViewModel(ISettingsService settingsService, ILibraryService libraryService)
+        if (SystemInformation.IsXbox)
         {
-            _settingsService = settingsService;
-            _libraryService = libraryService;
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _storageDeviceRefreshTimer = _dispatcherQueue.CreateTimer();
-            MusicLocations = new ObservableCollection<StorageFolder>();
-            VideoLocations = new ObservableCollection<StorageFolder>();
-            RemovableStorageFolders = new ObservableCollection<StorageFolder>();
-
-            if (SystemInformation.IsXbox)
-            {
-                _portableStorageDeviceWatcher = DeviceInformation.CreateWatcher(DeviceClass.PortableStorageDevice);
-                _portableStorageDeviceWatcher.Updated += OnPortableStorageDeviceChanged;
-                _portableStorageDeviceWatcher.Removed += OnPortableStorageDeviceChanged;
-                _portableStorageDeviceWatcher.Start();
-            }
-
-            // Load values
-            _playerAutoResize = (int)_settingsService.PlayerAutoResize;
-            _playerVolumeGesture = _settingsService.PlayerVolumeGesture;
-            _playerSeekGesture = _settingsService.PlayerSeekGesture;
-            _playerTapGesture = _settingsService.PlayerTapGesture;
-            _useIndexer = _settingsService.UseIndexer;
-            _showRecent = _settingsService.ShowRecent;
-            _searchRemovableStorage = _settingsService.SearchRemovableStorage;
-            _advancedMode = _settingsService.AdvancedMode;
-            _globalArguments = _settingsService.GlobalArguments;
-            _originalAdvancedMode ??= _advancedMode;
-            _originalGlobalArguments ??= _globalArguments;
-            _isRelaunchRequired = CheckForRelaunch();
-            int maxVolume = _settingsService.MaxVolume;
-            _volumeBoost = maxVolume switch
-            {
-                >= 200 => 3,
-                >= 150 => 2,
-                >= 125 => 1,
-                _ => 0
-            };
-
-            IsActive = true;
+            _portableStorageDeviceWatcher = DeviceInformation.CreateWatcher(DeviceClass.PortableStorageDevice);
+            _portableStorageDeviceWatcher.Updated += OnPortableStorageDeviceChanged;
+            _portableStorageDeviceWatcher.Removed += OnPortableStorageDeviceChanged;
+            _portableStorageDeviceWatcher.Start();
         }
 
-        partial void OnPlayerAutoResizeChanged(int value)
+        // Load values
+        PlayerAutoResize = (int)PlayerSettings.AutoResize;
+        ShowRecent = GeneralSettings.ShowRecent;
+        Theme = ((int)GeneralSettings.Theme + 2) % 3;
+        SearchRemovableStorage = LibrarySettings.SearchRemovableStorage;
+        AdvancedMode = PlayerSettings.AdvancedMode;
+        VideoUpscaling = (int)PlayerSettings.VideoUpscale;
+        GlobalArguments = PlayerSettings.GlobalArguments;
+        int maxVolume = PlaybackSettings.MaxVolume;
+        VolumeBoost = maxVolume switch
         {
-            _settingsService.PlayerAutoResize = (PlayerAutoResizeOption)value;
-            Messenger.Send(new SettingsChangedMessage(nameof(PlayerAutoResize)));
+            >= 200 => 3,
+            >= 150 => 2,
+            >= 125 => 1,
+            _ => 0
+        };
+
+        string currentLanguage = ApplicationLanguages.PrimaryLanguageOverride;
+        SelectedLanguage = AvailableLanguages.FindIndex(l => l.LanguageTag.Equals(currentLanguage));
+
+        // Setting initial values for relaunch check
+        _initialValues ??= new InitialValues(GlobalArguments, AdvancedMode, VideoUpscaling, SelectedLanguage);
+        CheckForRelaunch();
+    }
+
+    partial void OnThemeChanged(int value)
+    {
+        // The recommended theme option order is Light, Dark, System
+        // So we need to map the value to the correct ThemeOption
+        GeneralSettings.Theme = (ThemeOption)((value + 1) % 3);
+    }
+
+    partial void OnSelectedLanguageChanged(int value)
+    {
+        if (value <= 0)
+        {
+            ApplicationLanguages.PrimaryLanguageOverride = string.Empty;
+            CheckForRelaunch();
+            return;
         }
 
-        partial void OnPlayerVolumeGestureChanged(bool value)
+        // If the value is out of bounds, do nothing
+        if (value >= AvailableLanguages.Count) return;
+        ApplicationLanguages.PrimaryLanguageOverride = AvailableLanguages[value].LanguageTag;
+        CheckForRelaunch();
+    }
+
+    partial void OnPlayerAutoResizeChanged(int value)
+    {
+        PlayerSettings.AutoResize = (PlayerAutoResizeOption)value;
+    }
+
+    partial void OnShowRecentChanged(bool value)
+    {
+        GeneralSettings.ShowRecent = value;
+        if (!value)
         {
-            _settingsService.PlayerVolumeGesture = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(PlayerVolumeGesture)));
+            ClearRecentContext();
+        }
+    }
+
+    partial void OnSearchRemovableStorageChanged(bool value)
+    {
+        LibrarySettings.SearchRemovableStorage = value;
+        if (SystemInformation.IsXbox && RemovableStorageFolders.Count > 0)
+        {
+            _dispatcherQueue.TryEnqueue(async () => await RefreshLibrariesAsync());
+        }
+    }
+
+    partial void OnVolumeBoostChanged(int value)
+    {
+        PlaybackSettings.MaxVolume = value switch
+        {
+            3 => 200,
+            2 => 150,
+            1 => 125,
+            _ => 100
+        };
+    }
+
+    partial void OnAdvancedModeChanged(bool value)
+    {
+        PlayerSettings.AdvancedMode = value;
+        CheckForRelaunch();
+    }
+
+    partial void OnVideoUpscalingChanged(int value)
+    {
+        PlayerSettings.VideoUpscale = (VideoUpscaleOption)value;
+        CheckForRelaunch();
+    }
+
+    partial void OnGlobalArgumentsChanged(string value)
+    {
+        string sanitized = VlcArgumentHelper.SanitizeArguments(value);
+        if (sanitized != value)
+        {
+            GlobalArguments = sanitized;
+            return;
         }
 
-        partial void OnPlayerSeekGestureChanged(bool value)
+        PlayerSettings.GlobalArguments = sanitized;
+        CheckForRelaunch();
+    }
+
+    [RelayCommand]
+    private async Task RefreshLibrariesAsync()
+    {
+        await Task.WhenAll(RefreshMusicLibrary(), RefreshVideosLibrary());
+    }
+
+    [RelayCommand]
+    private async Task AddVideosFolderAsync()
+    {
+        if (_videosLibrary == null) return;
+        await _videosLibrary.RequestAddFolderAsync();
+    }
+
+    [RelayCommand]
+    private async Task RemoveVideosFolderAsync(StorageFolder folder)
+    {
+        if (_videosLibrary == null) return;
+        try
         {
-            _settingsService.PlayerSeekGesture = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(PlayerSeekGesture)));
+            await _videosLibrary.RequestRemoveFolderAsync(folder);
+        }
+        catch (Exception)
+        {
+            // System.Exception: The remote procedure call was cancelled.
+            // pass
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddMusicFolderAsync()
+    {
+        if (_musicLibrary == null) return;
+        await _musicLibrary.RequestAddFolderAsync();
+    }
+
+    [RelayCommand]
+    private async Task RemoveMusicFolderAsync(StorageFolder folder)
+    {
+        if (_musicLibrary == null) return;
+        try
+        {
+            await _musicLibrary.RequestRemoveFolderAsync(folder);
+        }
+        catch (Exception)
+        {
+            // System.Exception: The remote procedure call was cancelled.
+            // pass
+        }
+    }
+
+    [RelayCommand]
+    private async Task ChangeFrameCaptureLocationAsync()
+    {
+        StorageFolder? folder = await _filesService.PickFolderAsync();
+        if (folder is null) return;
+
+        // Release the previous entry so the FutureAccessList (capped at 1000 items) doesn't accumulate stale folders.
+        string oldToken = PlayerSettings.FrameCaptureFolderToken;
+        if (!string.IsNullOrEmpty(oldToken) && StorageApplicationPermissions.FutureAccessList.ContainsItem(oldToken))
+        {
+            StorageApplicationPermissions.FutureAccessList.Remove(oldToken);
         }
 
-        partial void OnPlayerTapGestureChanged(bool value)
+        string newToken = StorageApplicationPermissions.FutureAccessList.Add(folder, "frame-capture");
+        PlayerSettings.FrameCaptureFolderToken = newToken;
+        FrameCaptureFolder = folder;
+    }
+
+    [RelayCommand]
+    private async Task OpenFrameCaptureFolderAsync()
+    {
+        try
         {
-            _settingsService.PlayerTapGesture = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(PlayerTapGesture)));
+            await LoadFrameCaptureFolderAsync();
+            await Launcher.LaunchFolderAsync(FrameCaptureFolder);
         }
-
-        partial void OnUseIndexerChanged(bool value)
+        catch (Exception e)
         {
-            _settingsService.UseIndexer = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(UseIndexer)));
+            _logger.LogError(e, "Failed to open the frame capture folder.");
         }
+    }
 
-        partial void OnShowRecentChanged(bool value)
+    [RelayCommand]
+    private void ClearRecentHistory()
+    {
+        ClearRecentContext();
+        StorageApplicationPermissions.MostRecentlyUsedList.Clear();
+    }
+
+    private void ClearRecentContext()
+    {
+        _recentContext.Recent.Clear();
+        _recentContext.PathToMruMappings.Clear();
+        _recentContext.TokenToMediaMappings.Clear();
+        _recentContext.IsLoaded = true;
+    }
+
+    [RelayCommand]
+    private async Task ClearPlaybackPositionHistoryAsync()
+    {
+        try
         {
-            _settingsService.ShowRecent = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(ShowRecent)));
+            _playbackProgressTracker.ClearAll();
+            await _playbackProgressTracker.SaveToDiskAsync();
         }
-
-        async partial void OnSearchRemovableStorageChanged(bool value)
+        catch (Exception)
         {
-            _settingsService.SearchRemovableStorage = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(SearchRemovableStorage)));
-
-            if (SystemInformation.IsXbox && RemovableStorageFolders.Count > 0)
-            {
-                await RefreshLibrariesAsync();
-            }
+            // pass
         }
+    }
 
-        partial void OnVolumeBoostChanged(int value)
+    public void OnNavigatedFrom()
+    {
+        if (SystemInformation.IsXbox)
+            _portableStorageDeviceWatcher?.Stop();
+    }
+
+    public async Task LoadLibraryLocations()
+    {
+        if (_videosLibrary == null)
         {
-            _settingsService.MaxVolume = value switch
-            {
-                3 => 200,
-                2 => 150,
-                1 => 125,
-                _ => 100
-            };
-            Messenger.Send(new SettingsChangedMessage(nameof(VolumeBoost)));
-        }
-
-        partial void OnAdvancedModeChanged(bool value)
-        {
-            _settingsService.AdvancedMode = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(AdvancedMode)));
-            IsRelaunchRequired = CheckForRelaunch();
-        }
-
-        partial void OnUseMultipleInstancesChanged(bool value)
-        {
-            _settingsService.UseMultipleInstances = value;
-            Messenger.Send(new SettingsChangedMessage(nameof(UseMultipleInstances)));
-        }
-
-        partial void OnGlobalArgumentsChanged(string value)
-        {
-            // No need to broadcast SettingsChangedMessage for this option
-            if (value != _settingsService.GlobalArguments)
-            {
-                _settingsService.GlobalArguments = value;
-            }
-
-            GlobalArguments = _settingsService.GlobalArguments;
-            IsRelaunchRequired = CheckForRelaunch();
-        }
-
-        [RelayCommand]
-        private async Task RefreshLibrariesAsync()
-        {
-            await Task.WhenAll(RefreshMusicLibrary(), RefreshVideosLibrary());
-        }
-
-        [RelayCommand]
-        private async Task AddVideosFolderAsync()
-        {
-            if (_videosLibrary == null) return;
-            await _videosLibrary.RequestAddFolderAsync();
-        }
-
-        [RelayCommand]
-        private async Task RemoveVideosFolderAsync(StorageFolder folder)
-        {
-            if (_videosLibrary == null) return;
-            try
-            {
-                await _videosLibrary.RequestRemoveFolderAsync(folder);
-            }
-            catch (Exception)
-            {
-                // System.Exception: The remote procedure call was cancelled.
-                // pass
-            }
-        }
-
-        [RelayCommand]
-        private async Task AddMusicFolderAsync()
-        {
-            if (_musicLibrary == null) return;
-            await _musicLibrary.RequestAddFolderAsync();
-        }
-
-        [RelayCommand]
-        private async Task RemoveMusicFolderAsync(StorageFolder folder)
-        {
-            if (_musicLibrary == null) return;
-            try
-            {
-                await _musicLibrary.RequestRemoveFolderAsync(folder);
-            }
-            catch (Exception)
-            {
-                // System.Exception: The remote procedure call was cancelled.
-                // pass
-            }
-        }
-
-        [RelayCommand]
-        private void ClearRecentHistory()
-        {
-            StorageApplicationPermissions.MostRecentlyUsedList.Clear();
-        }
-
-        public void OnNavigatedFrom()
-        {
-            if (SystemInformation.IsXbox)
-                _portableStorageDeviceWatcher?.Stop();
-        }
-
-        public async Task LoadLibraryLocations()
-        {
-            if (_videosLibrary == null)
-            {
-                if (_libraryService.VideosLibrary == null)
-                {
-                    try
-                    {
-                        await _libraryService.InitializeVideosLibraryAsync();
-                    }
-                    catch (Exception)
-                    {
-                        // pass
-                    }
-                }
-
-                _videosLibrary = _libraryService.VideosLibrary;
-                if (_videosLibrary != null)
-                {
-                    _videosLibrary.DefinitionChanged += LibraryOnDefinitionChanged;
-                }
-            }
-
-            if (_musicLibrary == null)
-            {
-                if (_libraryService.MusicLibrary == null)
-                {
-                    try
-                    {
-                        await _libraryService.InitializeMusicLibraryAsync();
-                    }
-                    catch (Exception)
-                    {
-                        // pass
-                    }
-                }
-
-                _musicLibrary = _libraryService.MusicLibrary;
-                if (_musicLibrary != null)
-                {
-                    _musicLibrary.DefinitionChanged += LibraryOnDefinitionChanged;
-                }
-            }
-
-            UpdateLibraryLocations();
-            await UpdateRemovableStorageFoldersAsync();
-        }
-
-        private void LibraryOnDefinitionChanged(StorageLibrary sender, object args)
-        {
-            _dispatcherQueue.TryEnqueue(UpdateLibraryLocations);
-        }
-
-        private void OnPortableStorageDeviceChanged(DeviceWatcher sender, DeviceInformationUpdate args)
-        {
-            async void RefreshAction() => await UpdateRemovableStorageFoldersAsync();
-            _storageDeviceRefreshTimer.Debounce(RefreshAction, TimeSpan.FromMilliseconds(500));
-        }
-
-        private void UpdateLibraryLocations()
-        {
+            _videosLibrary = _libraryContext.VideosStorageLibrary;
             if (_videosLibrary != null)
             {
-                VideoLocations.Clear();
-                foreach (StorageFolder folder in _videosLibrary.Folders)
-                {
-                    VideoLocations.Add(folder);
-                }
-            }
-
-            if (_musicLibrary != null)
-            {
-                MusicLocations.Clear();
-
-                foreach (StorageFolder folder in _musicLibrary.Folders)
-                {
-                    MusicLocations.Add(folder);
-                }
+                _videosLibrary.DefinitionChanged += LibraryOnDefinitionChanged;
             }
         }
 
-        private async Task UpdateRemovableStorageFoldersAsync()
+        if (_musicLibrary == null)
         {
-            if (SystemInformation.IsXbox)
+            _musicLibrary = _libraryContext.MusicStorageLibrary;
+            if (_musicLibrary != null)
             {
-                RemovableStorageFolders.Clear();
+                _musicLibrary.DefinitionChanged += LibraryOnDefinitionChanged;
+            }
+        }
+
+        UpdateLibraryLocations();
+        await UpdateRemovableStorageFoldersAsync();
+    }
+
+    public async Task LoadFrameCaptureFolderAsync()
+    {
+        try
+        {
+            FrameCaptureFolder = await _filesService.GetFrameCaptureFolderAsync(PlayerSettings.FrameCaptureFolderToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to load the frame capture folder.");
+        }
+    }
+
+    private void LibraryOnDefinitionChanged(StorageLibrary sender, object args)
+    {
+        _dispatcherQueue.TryEnqueue(UpdateLibraryLocations);
+    }
+
+    private void OnPortableStorageDeviceChanged(DeviceWatcher sender, DeviceInformationUpdate args)
+    {
+        async void RefreshAction() => await UpdateRemovableStorageFoldersAsync();
+        _storageDeviceRefreshTimer.Debounce(RefreshAction, TimeSpan.FromMilliseconds(500));
+    }
+
+    private void UpdateLibraryLocations()
+    {
+        if (_videosLibrary != null)
+        {
+            VideoLocations.Clear();
+            foreach (StorageFolder folder in _videosLibrary.Folders)
+            {
+                VideoLocations.Add(folder);
+            }
+        }
+
+        if (_musicLibrary != null)
+        {
+            MusicLocations.Clear();
+
+            foreach (StorageFolder folder in _musicLibrary.Folders)
+            {
+                MusicLocations.Add(folder);
+            }
+        }
+    }
+
+    private async Task UpdateRemovableStorageFoldersAsync()
+    {
+        if (SystemInformation.IsXbox)
+        {
+            RemovableStorageFolders.Clear();
+            if (SystemInformation.IsKnownFolderRequestAccessSupported)
+            {
                 var accessStatus = await KnownFolders.RequestAccessAsync(KnownFolderId.RemovableDevices);
                 if (accessStatus != KnownFoldersAccessStatus.Allowed)
                     return;
+            }
 
-                foreach (StorageFolder folder in await KnownFolders.RemovableDevices.GetFoldersAsync())
-                {
-                    RemovableStorageFolders.Add(folder);
-                }
+            foreach (StorageFolder folder in await KnownFolders.RemovableDevices.GetFoldersAsync())
+            {
+                RemovableStorageFolders.Add(folder);
             }
         }
+    }
 
-        private async Task RefreshMusicLibrary()
+    private async Task RefreshMusicLibrary()
+    {
+        try
         {
-            try
-            {
-                await _libraryService.FetchMusicAsync(false);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                Messenger.Send(new RaiseLibraryAccessDeniedNotificationMessage(KnownLibraryId.Music));
-            }
-            catch (Exception e)
-            {
-                Messenger.Send(new ErrorMessage(null, e.Message));
-                LogService.Log(e);
-            }
+            await _libraryCoordinator.FetchMusicAsync(false);
         }
-
-        private async Task RefreshVideosLibrary()
+        catch (UnauthorizedAccessException)
         {
-            try
-            {
-                await _libraryService.FetchVideosAsync(false);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                Messenger.Send(new RaiseLibraryAccessDeniedNotificationMessage(KnownLibraryId.Videos));
-            }
-            catch (Exception e)
-            {
-                Messenger.Send(new ErrorMessage(null, e.Message));
-                LogService.Log(e);
-            }
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.MusicLibraryAccessDenied));
         }
-
-        private bool CheckForRelaunch()
+        catch (Exception e)
         {
-            // Check if global arguments have been changed
-            bool argsChanged = _originalGlobalArguments != _settingsService.GlobalArguments;
-
-            // Check if advanced mode has been changed
-            bool modeChanged = _originalAdvancedMode != AdvancedMode;
-
-            // Check if there are any global arguments set
-            bool hasArgs = _settingsService.GlobalArguments.Length > 0;
-
-            // Check if advanced mode is on, and if global arguments are set
-            bool whenOn = modeChanged && AdvancedMode && hasArgs;
-
-            // Check if advanced mode is off, and if global arguments are set or have been removed
-            bool whenOff = modeChanged && !AdvancedMode && (!hasArgs && argsChanged || hasArgs);
-
-            // Require relaunch when advanced mode is on and global arguments have been changed
-            bool whenOnAndChanged = AdvancedMode && argsChanged;
-
-            // Combine everything
-            return whenOn || whenOff || whenOnAndChanged;
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.None, message: e.Message));
+            _logger.LogError(e, "Failed to refresh the music library from settings.");
         }
+    }
+
+    private async Task RefreshVideosLibrary()
+    {
+        try
+        {
+            await _libraryCoordinator.FetchVideosAsync(false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.VideosLibraryAccessDenied));
+        }
+        catch (Exception e)
+        {
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.None, message: e.Message));
+            _logger.LogError(e, "Failed to refresh the videos library from settings.");
+        }
+    }
+
+    private void CheckForRelaunch()
+    {
+        if (_initialValues == null) return;
+
+        // Check if upscaling mode has been changed
+        bool upscalingChanged = _initialValues.VideoUpscaling != VideoUpscaling;
+
+        // Check if app language has been changed
+        bool languageChanged = _initialValues.Language != SelectedLanguage;
+
+        // Check if global arguments have been changed
+        bool argsChanged = _initialValues.GlobalArguments != GlobalArguments;
+
+        // Check if advanced mode has been changed
+        bool modeChanged = _initialValues.AdvancedMode != AdvancedMode;
+
+        // Check if there are any global arguments set
+        bool hasArgs = GlobalArguments.Length > 0;
+
+        // Check if advanced mode is on, and if global arguments are set
+        bool whenOn = modeChanged && AdvancedMode && hasArgs;
+
+        // Check if advanced mode is off, and if global arguments are set or have been removed
+        bool whenOff = modeChanged && !AdvancedMode && ((!hasArgs && argsChanged) || hasArgs);
+
+        // Require relaunch when advanced mode is on and global arguments have been changed
+        bool whenOnAndChanged = AdvancedMode && argsChanged;
+
+        // Combine everything
+        IsRelaunchRequired = upscalingChanged || languageChanged || whenOn || whenOff || whenOnAndChanged;
     }
 }

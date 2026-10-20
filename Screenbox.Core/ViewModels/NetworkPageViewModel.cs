@@ -1,47 +1,44 @@
-﻿#nullable enable
-
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Storage;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class NetworkPageViewModel : ObservableRecipient
 {
-    public sealed partial class NetworkPageViewModel : ObservableRecipient
+    [ObservableProperty] public partial string TitleText { get; set; }
+
+    public NetworkPageViewModel()
     {
-        [ObservableProperty] private string _titleText;
+        TitleText = string.Empty;
+        Breadcrumbs = new ObservableCollection<string>();
+    }
 
-        public NetworkPageViewModel()
+    public ObservableCollection<string> Breadcrumbs { get; }
+
+    public void OnNavigatedTo(object? parameter)
+    {
+        switch (parameter)
         {
-            _titleText = string.Empty;
-            Breadcrumbs = new ObservableCollection<string>();
+            case NavigationMetadata { Parameter: IReadOnlyList<StorageFolder> crumbs }:
+                UpdateBreadcrumbs(crumbs);
+                break;
+            case IReadOnlyList<StorageFolder> crumbs:
+                UpdateBreadcrumbs(crumbs);
+                break;
         }
+    }
 
-        public ObservableCollection<string> Breadcrumbs { get; }
-
-        public void OnNavigatedTo(object? parameter)
+    private void UpdateBreadcrumbs(IReadOnlyList<StorageFolder>? crumbs)
+    {
+        Breadcrumbs.Clear();
+        if (crumbs == null) return;
+        TitleText = crumbs.LastOrDefault()?.DisplayName ?? string.Empty;
+        foreach (StorageFolder storageFolder in crumbs)
         {
-            switch (parameter)
-            {
-                case NavigationMetadata { Parameter: IReadOnlyList<StorageFolder> crumbs }:
-                    UpdateBreadcrumbs(crumbs);
-                    break;
-                case IReadOnlyList<StorageFolder> crumbs:
-                    UpdateBreadcrumbs(crumbs);
-                    break;
-            }
-        }
-
-        private void UpdateBreadcrumbs(IReadOnlyList<StorageFolder>? crumbs)
-        {
-            Breadcrumbs.Clear();
-            if (crumbs == null) return;
-            TitleText = crumbs.LastOrDefault()?.DisplayName ?? string.Empty;
-            foreach (StorageFolder storageFolder in crumbs)
-            {
-                Breadcrumbs.Add(storageFolder.DisplayName);
-            }
+            Breadcrumbs.Add(storageFolder.DisplayName);
         }
     }
 }

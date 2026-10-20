@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="128" align="center" src="https://user-images.githubusercontent.com/31434093/157200320-19a6a26e-c466-4d62-baae-6e2ff9fa4593.png">
+  <img width="128" align="center" src="Screenbox/Assets/StoreLogo.scale-400.png">
 </p>
 <h1 align="center">
   Screenbox
@@ -8,7 +8,7 @@
   The modern media player for Windows
 </p>
 <p align="center">
-  <a href='//www.microsoft.com/store/apps/9NTSNMSVCB5L?cid=storebadge&ocid=badge'>
+  <a href='https://apps.microsoft.com/detail/9NTSNMSVCB5L?cid=storebadge&mode=mini'>
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20light.svg">
       <source media="(prefers-color-scheme: light)" srcset="https://get.microsoft.com/images/en-us%20dark.svg">
@@ -17,13 +17,17 @@
   </a>
 </p>
 
-Screenbox is a modern video player that cares about performance and ease of use on a wide range of device types. It features a beautiful, friendly user interface while being fast and lightweight. Screenbox is available on Windows 10 version 1903 and up, Windows 11, and Xbox consoles.
+Screenbox is a modern video player that cares about performance and ease of use on a wide range of device types. It features a beautiful, friendly user interface that is fast and lightweight. Screenbox is available on Windows 10 version 1903 and up, Windows 11, and Xbox consoles.
 
 Screenbox is built on top of [LibVLCSharp](https://github.com/videolan/libvlcsharp) and the Universal Windows Platform (UWP).
 
-![Screenshot of the home page](https://user-images.githubusercontent.com/31434093/226089502-0b82157d-8e48-408c-b501-6b6c17b8a584.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/assets/images/docs/PC-HeroHomePage-Dark.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="/assets/images/docs/PC-HeroHomePage-Light.png?raw=true">
+  <img alt="Screenshot of the Screenbox home page." src="/assets/images/docs/PC-HeroHomePage-Dark.png?raw=true" width="1248">
+</picture>
 
-![Screenshot of the video player](https://user-images.githubusercontent.com/31434093/226089522-fc02208d-a7b5-4821-bb74-f48f79e9c813.png)
+![Screenshot of the Screenbox video player](/assets/images/docs/PC-HeroPlayerPageVideo_Dark.png)
 
 Some notable features:
 
@@ -43,14 +47,26 @@ And many more on the way!
 The recommended way to install Screenbox is through the [Microsoft Store](https://www.microsoft.com/store/apps/9NTSNMSVCB5L). Installing through the store ensures the app stays up to date automatically. You don't need a Microsoft account to download apps from the store. The app can also be installed through winget using the following command.
 
 ```shell
-winget install "Screenbox Media Player" -s msstore
+winget install screenbox -s winget
 ```
-
-The sideload package found on the release page is supposed to be used for validation purposes only. It lacks a proper app certificate and does not have automatic update. Before installing the package, you must install the bundled certificate in the CA Root store. This action requires you to have the system administrator permission. If you understand the implications of installing a sideload package and still wish to install it anyway, excute the `Install.ps1` file in an elavated PowerShell instance.
 
 ## Contribute
 
-Feel free to open an issue if you want to report a bug, give feedback, or just want to ask a question. PRs are very welcome!
+Feel free to open an issue if you want to report a bug, give feedback, or ask a question. PRs are very welcome!
+
+### For Contributors
+
+- 📖 **[Contributing Guide](CONTRIBUTING.md)** - Complete guide for new contributors
+- 🏗️ **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Detailed codebase architecture overview
+
+### Quick Start for Developers
+
+1. **Prerequisites**: Visual Studio 2026 with UWP development workload
+2. **Clone**: `git clone https://github.com/huynhsontung/Screenbox.git`
+3. **Build**: Open `Screenbox.slnx` and build the solution (Ctrl+Shift+B)
+4. **Run**: Set platform to x64 and start debugging (F5)
+
+See the [Contributing Guide](CONTRIBUTING.md) for detailed setup instructions.
 
 ## Translation
 
@@ -58,7 +74,7 @@ Feel free to open an issue if you want to report a bug, give feedback, or just w
 
 Help translate the app to your language on [Crowdin](https://crowdin.com/project/screenbox)! Crowdin offers an intuitive UX for you to get started and is the recommended tool for localization. Translations are automatically synced to GitHub and published in the next minor update.
 
-You can also translate the app locally without Crowdin. The project source language is English, United States. All localizable source files are in the `Screenbox\Strings\en-US` directory. Localizable file types are `.resw` and `.md`. It is recommended that you use [ResX Resource Manager](https://github.com/dotnet/ResXResourceManager) for easier `.resw` translation.
+You can also translate the app locally without Crowdin. The project source language is English, United States. All localizable source files are in the `Screenbox\Strings\en-US` directory. Localizable file types are `.resw` and `.md`.
 
 Make sure you have your translations in the appropriate folder under the `Screenbox\Strings` directory. We use a [IETF language tag](https://www.venea.net/web/culture_code) to name the folder that contains resources for that language (e.g. `fr-FR` for French (France), `es-ES` for Spanish (Spain)). Files in these folders are translated copies of the original resource files in `Screenbox\Strings\en-US`.
 

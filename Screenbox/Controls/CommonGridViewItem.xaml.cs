@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Media;
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Screenbox.Controls;
+
 public sealed partial class CommonGridViewItem : UserControl
 {
     public static readonly DependencyProperty ThumbnailHeightProperty = DependencyProperty.Register(
@@ -14,8 +15,14 @@ public sealed partial class CommonGridViewItem : UserControl
     public static readonly DependencyProperty PlayCommandProperty = DependencyProperty.Register(
         nameof(PlayCommand), typeof(ICommand), typeof(CommonGridViewItem), new PropertyMetadata(default(ICommand)));
 
+    public static readonly DependencyProperty PlayCommandParameterProperty = DependencyProperty.Register(
+        nameof(PlayCommandParameter), typeof(object), typeof(CommonGridViewItem), new PropertyMetadata(default(object)));
+
     public static readonly DependencyProperty HorizontalTextAlignmentProperty = DependencyProperty.Register(
         nameof(HorizontalTextAlignment), typeof(TextAlignment), typeof(CommonGridViewItem), new PropertyMetadata(TextAlignment.Left));
+
+    public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
+        nameof(Title), typeof(string), typeof(CommonGridViewItem), new PropertyMetadata(string.Empty));
 
     public static readonly DependencyProperty CaptionProperty = DependencyProperty.Register(
         nameof(Caption), typeof(string), typeof(CommonGridViewItem), new PropertyMetadata(string.Empty));
@@ -46,14 +53,22 @@ public sealed partial class CommonGridViewItem : UserControl
 
     public ImageSource? ThumbnailSource
     {
+        [DynamicWindowsRuntimeCast(typeof(ImageSource))]
         get => (ImageSource?)GetValue(ThumbnailSourceProperty);
         set => SetValue(ThumbnailSourceProperty, value);
     }
 
     public IconSource? PlaceholderIconSource
     {
+        [DynamicWindowsRuntimeCast(typeof(IconSource))]
         get => (IconSource?)GetValue(PlaceholderIconSourceProperty);
         set => SetValue(PlaceholderIconSourceProperty, value);
+    }
+
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
     }
 
     public string Caption
@@ -64,6 +79,7 @@ public sealed partial class CommonGridViewItem : UserControl
 
     public TextAlignment HorizontalTextAlignment
     {
+        [DynamicWindowsRuntimeCast(typeof(TextAlignment))]
         get => (TextAlignment)GetValue(HorizontalTextAlignmentProperty);
         set => SetValue(HorizontalTextAlignmentProperty, value);
     }
@@ -72,6 +88,12 @@ public sealed partial class CommonGridViewItem : UserControl
     {
         get => (ICommand?)GetValue(PlayCommandProperty);
         set => SetValue(PlayCommandProperty, value);
+    }
+
+    public object? PlayCommandParameter
+    {
+        get => GetValue(PlayCommandParameterProperty);
+        set => SetValue(PlayCommandParameterProperty, value);
     }
 
     public double ThumbnailHeight

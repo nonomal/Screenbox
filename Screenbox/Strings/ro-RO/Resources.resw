@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -139,6 +139,23 @@
   <data name="FailedToSaveFrameNotificationTitle" xml:space="preserve">
     <value>Nu s-a reușit salvarea cadrului</value>
   </data>
+  <data name="TimeElapsed" xml:space="preserve">
+    <value>Timp scurs</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Timp rămas</value>
+  </data>
+  <data name="TimeLength" xml:space="preserve">
+    <value>Durată totală</value>
+  </data>
+  <data name="ChapterPluralized_One" xml:space="preserve">
+    <value>Capitol</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="ChapterPluralized_Other" xml:space="preserve">
+    <value>Capitole</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
   <data name="ChapterName" xml:space="preserve">
     <value>Capitol {0}</value>
     <comment>#Format[Int32 chapter]</comment>
@@ -166,6 +183,9 @@
   </data>
   <data name="Volume" xml:space="preserve">
     <value>Volum</value>
+  </data>
+  <data name="VolumeSliderTooltip" xml:space="preserve">
+    <value>Ajustare volum</value>
   </data>
   <data name="Seek" xml:space="preserve">
     <value>Caută</value>
@@ -211,6 +231,21 @@
   <data name="AddToQueue" xml:space="preserve">
     <value>Adăugare la coadă</value>
   </data>
+  <data name="Select" xml:space="preserve">
+    <value>Selectare</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Selectați tot</value>
+  </data>
+  <data name="SelectAllToolTip" xml:space="preserve">
+    <value>Selectați toate elementele din această vizualizare</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Selectați nici unul</value>
+  </data>
+  <data name="SelectNoneToolTip" xml:space="preserve">
+    <value>Ștergeți selecția</value>
+  </data>
   <data name="ClearSelection" xml:space="preserve">
     <value>Ștergere selecție</value>
   </data>
@@ -249,6 +284,9 @@
   </data>
   <data name="RestoreView" xml:space="preserve">
     <value>Restabilește vizualizarea videoclipului</value>
+  </data>
+  <data name="MinimizeImmersiveView" xml:space="preserve">
+    <value>Minimizare vizualizarea imersivă</value>
   </data>
   <data name="Cast" xml:space="preserve">
     <value>Proiectare</value>
@@ -304,6 +342,9 @@
   <data name="SearchBoxPlaceholderText" xml:space="preserve">
     <value>Căutare</value>
   </data>
+  <data name="SearchBoxToolTip" xml:space="preserve">
+    <value>Căutare videoclipuri, melodii, albume și altele</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Setări</value>
   </data>
@@ -321,6 +362,12 @@
   </data>
   <data name="OpenFileLocation" xml:space="preserve">
     <value>Deschidere locație fișier</value>
+  </data>
+  <data name="OpenInFileExplorer" xml:space="preserve">
+    <value>Deschidere în Explorer</value>
+  </data>
+  <data name="OpenWith" xml:space="preserve">
+    <value>Deschidere cu</value>
   </data>
   <data name="PropertyAlbum" xml:space="preserve">
     <value>Album</value>
@@ -424,17 +471,26 @@
   <data name="Artists" xml:space="preserve">
     <value>Artiști</value>
   </data>
+  <data name="Song" xml:space="preserve">
+    <value>Melodie</value>
+  </data>
   <data name="Songs" xml:space="preserve">
     <value>Melodii</value>
   </data>
   <data name="OpenFilesToolTip" xml:space="preserve">
     <value>Răsfoiți fișierele care vor fi redate</value>
   </data>
+  <data name="OpenFilesSecondaryToolTip" xml:space="preserve">
+    <value>Mai multe opțiuni pentru deschiderea fișierelor media</value>
+  </data>
   <data name="AddFiles" xml:space="preserve">
     <value>Adăugați fișiere</value>
   </data>
   <data name="AddFilesToPlayQueueToolTip" xml:space="preserve">
     <value>Răsfoiți pentru fișiere pentru coada de redare</value>
+  </data>
+  <data name="AddFilesToPlayQueueSecondaryToolTip" xml:space="preserve">
+    <value>Mai multe opțiuni pentru adăugarea fișierelor media la coada de redare</value>
   </data>
   <data name="AddMusicFolderToolTip" xml:space="preserve">
     <value>Adăugați un folder la biblioteca dvs. de muzică</value>
@@ -585,6 +641,9 @@
   <data name="SettingsShowRecentHeader" xml:space="preserve">
     <value>Arată recentele</value>
   </data>
+  <data name="SettingsShowControlsHeader" xml:space="preserve">
+    <value>Afișați controalele când redarea este în pauză</value>
+  </data>
   <data name="SettingsVideoLibraryLocationsHeader" xml:space="preserve">
     <value>Locațiile bibliotecii video</value>
   </data>
@@ -609,6 +668,18 @@
   <data name="SettingsVolumeBoostDescription" xml:space="preserve">
     <value>Permite volumului maxim să depășească 100%</value>
   </data>
+  <data name="SettingsRewindDescription" xml:space="preserve">
+    <value>Timpul sărit înapoi când derulați înapoi</value>
+  </data>
+  <data name="SettingsFastForwardDescription" xml:space="preserve">
+    <value>Timpul sărit înainte când derulați rapid înainte</value>
+  </data>
+  <data name="SettingsOnScreenControlsHeader" xml:space="preserve">
+    <value>Comenzi pe ecran</value>
+  </data>
+  <data name="SettingsOnScreenControlsDescription" xml:space="preserve">
+    <value>Alegeți care elemente pot apărea în comenzi și reglați comportamentul de auto-ascundere</value>
+  </data>
   <data name="SettingsGesturesHeader" xml:space="preserve">
     <value>Gesturi</value>
   </data>
@@ -617,9 +688,6 @@
   </data>
   <data name="SettingsGestureVolume" xml:space="preserve">
     <value>Trageți vertical pentru a ajusta volumul</value>
-  </data>
-  <data name="SettingsGestureTap" xml:space="preserve">
-    <value>Atingeți oriunde pentru a reda sau a întrerupe</value>
   </data>
   <data name="AppFriendlyName" xml:space="preserve">
     <value>Screenbox Media Player</value>
@@ -649,11 +717,26 @@
   <data name="SubtitleAddedNotificationTitle" xml:space="preserve">
     <value>Subtitrare adăugată</value>
   </data>
+  <data name="PlaylistCreatedNotificationTitle" xml:space="preserve">
+    <value>Playlist-ul „{0}” a fost creat</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistDeletedNotificationTitle" xml:space="preserve">
+    <value>Playlist-ul „{0}” a fost șters</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistRenamedNotificationTitle" xml:space="preserve">
+    <value>Playlist-ul a fost redenumit în „{0}”</value>
+    <comment>#Format[String name]</comment>
+  </data>
   <data name="CriticalError" xml:space="preserve">
     <value>Eroare critică</value>
   </data>
   <data name="CriticalErrorDirect3D11NotAvailable" xml:space="preserve">
     <value>Nu este disponibil niciun dispozitiv de redare compatibil. Asigurați-vă că Direct3D 11 este disponibil pe dispozitivul dvs.</value>
+  </data>
+  <data name="CriticalErrorMoreInformation" xml:space="preserve">
+    <value>Pentru mai multe informații despre această problemă și posibile soluții, vizitați</value>
   </data>
   <data name="FailedToOpenFilesNotificationTitle" xml:space="preserve">
     <value>Deschiderea fișierelor a eșuat</value>
@@ -689,6 +772,9 @@
   <data name="SettingsCategoryAdvanced" xml:space="preserve">
     <value>Avansat</value>
   </data>
+  <data name="SettingsCategoryPrivacy" xml:space="preserve">
+    <value>Confidențialitate</value>
+  </data>
   <data name="SettingsAdvancedModeHeader" xml:space="preserve">
     <value>Mod avansat</value>
   </data>
@@ -721,6 +807,9 @@
   </data>
   <data name="License" xml:space="preserve">
     <value>Licență</value>
+  </data>
+  <data name="ThirdPartyNotices" xml:space="preserve">
+    <value>Confirmare software terță parte</value>
   </data>
   <data name="HyperlinkTranslate" xml:space="preserve">
     <value>Ajută la traducere</value>
@@ -776,4 +865,329 @@
   <data name="SettingsUseMultipleInstancesDescription" xml:space="preserve">
     <value>Deschideți întotdeauna fișierele media într-o instanță nouă</value>
   </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Sortare după</value>
+  </data>
+  <data name="SortByAutomationName" xml:space="preserve">
+    <value>Sortare după opțiunea {0} selectată</value>
+    <comment>#Format[String sortBy]</comment>
+  </data>
+  <data name="Artist" xml:space="preserve">
+    <value>Artist</value>
+  </data>
+  <data name="ReleasedYear" xml:space="preserve">
+    <value>Anul lansării</value>
+  </data>
+  <data name="SettingsAudioVisualHeader" xml:space="preserve">
+    <value>Vizualizare audio</value>
+  </data>
+  <data name="GetLivelyApp" xml:space="preserve">
+    <value>Obțineți Lively Wallpaper</value>
+  </data>
+  <data name="GetLivelyVisuals" xml:space="preserve">
+    <value>Descărcați vizualizări de pe GitHub</value>
+  </data>
+  <data name="VisualizerOptionsToolTip" xml:space="preserve">
+    <value>Opțiuni vizuale audio</value>
+  </data>
+  <data name="Visuals" xml:space="preserve">
+    <value>Vizuale</value>
+  </data>
+  <data name="BrowseFiles" xml:space="preserve">
+    <value>Răsfoire fișier(e)</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Implicit</value>
+  </data>
+  <data name="SettingsAudioVisualDescription" xml:space="preserve">
+    <value>Alegeți un stil imagistic pentru a fii afișat în timpul redării audio</value>
+  </data>
+  <data name="PoweredByLivelyWallpaper" xml:space="preserve">
+    <value>Oferit de Lively Wallpaper</value>
+  </data>
+  <data name="SettingsImportVisualsHeader" xml:space="preserve">
+    <value>Importare vizualizări</value>
+  </data>
+  <data name="SettingsImportVisualsDescription" xml:space="preserve">
+    <value>Obțineți mai multe vizualizări prin intermediul aplicației Lively Wallpaper sau descărcați-le de pe GitHub</value>
+  </data>
+  <data name="DateAdded" xml:space="preserve">
+    <value>Data adăugării</value>
+  </data>
+  <data name="Media" xml:space="preserve">
+    <value>Media</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>Videoclip</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>Fișier</value>
+  </data>
+  <data name="MusicLibrary" xml:space="preserve">
+    <value>Muzică</value>
+  </data>
+  <data name="VideoLibrary" xml:space="preserve">
+    <value>Videoclipuri</value>
+  </data>
+  <data name="ShowAlbum" xml:space="preserve">
+    <value>Afișare album</value>
+  </data>
+  <data name="ShowArtist" xml:space="preserve">
+    <value>Afișare artist</value>
+  </data>
+  <data name="FailedToLoadVisualNotificationTitle" xml:space="preserve">
+    <value>Încărcarea vizualelor a eșuat</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderDescription" xml:space="preserve">
+    <value>La deschiderea unui singur fișier, adăugați automat toate celelalte fișiere din folder în coada de redare.</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderHeader" xml:space="preserve">
+    <value>Adăugați toate fișierele din folder în coadă</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Utilizați setările de sistem</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Întunecată</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Luminoasă</value>
+  </data>
+  <data name="SettingsThemeSelectionDescription" xml:space="preserve">
+    <value>Selectați o temă pentru a se potrivi cu setările Windows sau alegeți una personalizată</value>
+  </data>
+  <data name="SettingsThemeSelectionHeader" xml:space="preserve">
+    <value>Temă</value>
+  </data>
+  <data name="SettingsCategoryPersonalization" xml:space="preserve">
+    <value>Personalizare</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionHeader" xml:space="preserve">
+    <value>Continuă întotdeauna din ultima poziție</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionDescription" xml:space="preserve">
+    <value>Continuă redarea de unde ai oprit ultima dată la deschiderea unui fișier</value>
+  </data>
+  <data name="SettingsVideoUpscalingHeader" xml:space="preserve">
+    <value>Metodă de creștere a rezoluției video</value>
+  </data>
+  <data name="SettingsVideoUpscalingDescription" xml:space="preserve">
+    <value>Super resolution upscaling requires compatible hardware and driver support.</value>
+  </data>
+  <data name="VideoUpscalingLinear" xml:space="preserve">
+    <value>Biliniară</value>
+  </data>
+  <data name="VideoUpscalingPoint" xml:space="preserve">
+    <value>Punct</value>
+  </data>
+  <data name="VideoUpscalingSuper" xml:space="preserve">
+    <value>Super rezoluție</value>
+  </data>
+  <data name="SettingsShowChaptersHeader" xml:space="preserve">
+    <value>Afișare nume capitole atunci când sunt disponibile</value>
+  </data>
+  <data name="SettingsOnScreenControlsHideDelayHeader" xml:space="preserve">
+    <value>Ascundeți controalele după această perioadă de timp</value>
+  </data>
+  <data name="SecondsCount_One" xml:space="preserve">
+    <value>{0} secundă</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SecondsCount_Other" xml:space="preserve">
+    <value>{0} secunde</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsLanguageSelectionHeader" xml:space="preserve">
+    <value>Limba aplicației</value>
+  </data>
+  <data name="SettingsLanguageSelectionDescription" xml:space="preserve">
+    <value>Schimbați limba de afișare a aplicației</value>
+  </data>
+  <data name="LanguageSystemDefault" xml:space="preserve">
+    <value>Utilizați limba sistemului</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>Niciun rezultat pentru "{0}"</value>
+    <comment>#Format[String searchQuery]</comment>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="SettingsGestureTapHeader" xml:space="preserve">
+    <value>Atingere</value>
+  </data>
+  <data name="SettingsGestureSwipeUpHeader" xml:space="preserve">
+    <value>Glisare în sus</value>
+  </data>
+  <data name="SettingsGestureSwipeDownHeader" xml:space="preserve">
+    <value>Glisare în jos</value>
+  </data>
+  <data name="SettingsGestureSwipeLeftHeader" xml:space="preserve">
+    <value>Glisare spre stânga</value>
+  </data>
+  <data name="SettingsGestureSwipeRightHeader" xml:space="preserve">
+    <value>Glisare spre dreapta</value>
+  </data>
+  <data name="SettingsGesturePressAndHoldHeader" xml:space="preserve">
+    <value>Activați apăsare și menținere pentru a crește viteza de redare</value>
+  </data>
+  <data name="PlaybackActionKindNone" xml:space="preserve">
+    <value>Nimic</value>
+  </data>
+  <data name="PlayPause" xml:space="preserve">
+    <value>Redare/pauză</value>
+  </data>
+  <data name="Rewind" xml:space="preserve">
+    <value>Derulare înapoi</value>
+  </data>
+  <data name="FastForward" xml:space="preserve">
+    <value>Rapid înainte</value>
+  </data>
+  <data name="DecreaseVolume" xml:space="preserve">
+    <value>Scădere volum</value>
+  </data>
+  <data name="IncreaseVolume" xml:space="preserve">
+    <value>Mărire volum</value>
+  </data>
+  <data name="DecreaseRate" xml:space="preserve">
+    <value>Reducere viteză</value>
+  </data>
+  <data name="IncreaseRate" xml:space="preserve">
+    <value>Mărire viteză</value>
+  </data>
+  <data name="NextTrack" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="PreviousTrack" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="NextChapter" xml:space="preserve">
+    <value>Next chapter</value>
+  </data>
+  <data name="PreviousChapter" xml:space="preserve">
+    <value>Previous chapter</value>
+  </data>
+  <data name="AddToPlaylist" xml:space="preserve">
+    <value>Adăugare la playlist</value>
+  </data>
+  <data name="CreateNewPlaylist" xml:space="preserve">
+    <value>Creare playlist nouă</value>
+  </data>
+  <data name="NewPlaylist" xml:space="preserve">
+    <value>Playlist nou</value>
+  </data>
+  <data name="ImportPlaylist" xml:space="preserve">
+    <value>Importare playlist</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exportare</value>
+  </data>
+  <data name="SelectedItem" xml:space="preserve">
+    <value>Element selectat</value>
+  </data>
+  <data name="SelectedItems" xml:space="preserve">
+    <value>Elemente selectate</value>
+  </data>
+  <data name="NoPlaylists" xml:space="preserve">
+    <value>Niciun playlist</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Creare</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Anulare</value>
+  </data>
+  <data name="NewPlaylistDefaultName" xml:space="preserve">
+    <value>Playlist fără titlu</value>
+  </data>
+  <data name="CreatePlaylistPlaceholder" xml:space="preserve">
+    <value>Introduceți un nume pentru acest playlist</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>Playlist-uri</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Ștergere</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Redenumire</value>
+  </data>
+  <data name="RenamePlaylistPlaceholder" xml:space="preserve">
+    <value>Introduceți un nume nou pentru acest playlist</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>Redenumire playlist</value>
+  </data>
+  <data name="DeletePlaylist" xml:space="preserve">
+    <value>Ștergere playlist</value>
+  </data>
+  <data name="DeletePlaylistConfirmation" xml:space="preserve">
+    <value>Sunteți sigur că doriți să ștergeți playlist-ul „{0}”? Această acțiune nu poate fi anulată.</value>
+    <comment>#Format[String playlistName]</comment>
+  </data>
+  <data name="PlaylistsSelected_One" xml:space="preserve">
+    <value>Playlist-ul {0} selectat</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="PlaylistsSelected_Other" xml:space="preserve">
+    <value>Playlist-urile {0} selectate</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsSavePlaybackPositionHeader" xml:space="preserve">
+    <value>Istoricul pozițiilor de redare</value>
+  </data>
+  <data name="SettingsSavePlaybackPositionDescription" xml:space="preserve">
+    <value>Păstrați istoricul pozițiilor mele de redare pe acest dispozitiv pentru a relua de unde ați rămas</value>
+  </data>
+  <data name="SettingsClearPlaybackPositionHeader" xml:space="preserve">
+    <value>Șterge istoricul pozițiilor de redare ale dispozitivului</value>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_One" xml:space="preserve">
+    <value>A fost adăugat {0} element la playlist-ul „{1}”</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_Other" xml:space="preserve">
+    <value>Au fost adăugate {0} elemente la playlist-ul „{1}”</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="NoPlaylistsPanelHeader" xml:space="preserve">
+    <value>Nu aveți niciun playlist</value>
+  </data>
+  <data name="NoPlaylistsPanelSubtext" xml:space="preserve">
+    <value>Creați-vă primul playlist pentru a vă organiza videoclipurile și muzica preferată.</value>
+  </data>
+  <data name="NoPlaylistItems" xml:space="preserve">
+    <value>Nu există elemente în acest playlist.</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationHeader" xml:space="preserve">
+    <value>Captura de cadru va fii salvată în</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationDescription" xml:space="preserve">
+    <value>Locația capturii de cadru</value>
+  </data>
+  <data name="ChangeFolder" xml:space="preserve">
+    <value>Modificare folder</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Modificare</value>
+  </data>
+  <data name="AspectRatioStatusMessage" xml:space="preserve">
+    <value>Raport aspect: {0}</value>
+    <comment>#Format[String ratio]</comment>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Opțiuni audio</value>
+  </data>
+  <data name="SubtitleOptions" xml:space="preserve">
+    <value>Opțiuni subtitrare</value>
+  </data>
+  <data name="DecreaseValue" xml:space="preserve">
+    <value>Scădere {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
+  <data name="IncreaseValue" xml:space="preserve">
+    <value>Mărire {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
 </root>
+

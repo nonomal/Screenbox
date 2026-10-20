@@ -1,34 +1,43 @@
-﻿<Page
+<Page
     x:Class="Screenbox.Pages.PlayQueuePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    xmlns:behaviors="using:Screenbox.Behaviors"
     xmlns:commands="using:Screenbox.Commands"
     xmlns:controls="using:Screenbox.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="using:Screenbox.Core.Helpers"
-    xmlns:interactions="using:Screenbox.Controls.Interactions"
+    xmlns:extensions="using:Screenbox.Extensions"
+    xmlns:helpers="using:Screenbox.Helpers"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:primitives="using:Windows.UI.Xaml.Controls.Primitives"
+    xmlns:sbuc="using:Screenbox.UI.Controls"
     xmlns:strings="using:Screenbox.Strings"
-    xmlns:triggers="using:CommunityToolkit.WinUI"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="PlayQueuePage_OnLoaded"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <MenuFlyout x:Key="AddToPlayQueueFlyout" Placement="BottomEdgeAlignedRight">
+        <MenuFlyout x:Key="AddToPlayQueueFlyout" Placement="{x:Bind helpers:GlobalizationHelper.MirrorWhenRightToLeft(primitives:FlyoutPlacementMode.BottomEdgeAlignedRight)}">
             <MenuFlyoutItem
-                Command="{x:Bind PlaylistView.ViewModel.AddFilesCommand}"
-                Icon="{ui:FontIcon Glyph=&#xE838;}"
-                Text="{strings:Resources Key=AddFiles}" />
+                AccessKey="{x:Bind strings:KeyboardResources.MenuItemFileKey}"
+                Command="{x:Bind PlayQueue.ViewModel.AddFilesCommand}"
+                Icon="{ui:FontIcon FontFamily={StaticResource ScreenboxSymbolThemeFontFamily},
+                                   Glyph={StaticResource FolderOpenGlyph}}"
+                Text="{x:Bind strings:Resources.AddFiles}" />
             <MenuFlyoutItem
+                x:Name="AddToPlayQueueMenuFlyoutFolderItem"
+                AccessKey="{x:Bind strings:KeyboardResources.MenuItemFolderKey}"
                 Command="{x:Bind ViewModel.AddFolderCommand}"
                 Icon="{ui:FontIcon FontFamily={StaticResource ScreenboxSymbolThemeFontFamily},
-                                   Glyph=&#xF2CE;}"
-                Text="{strings:Resources Key=AddFolder}" />
-            <MenuFlyoutItem Icon="{ui:SymbolIcon Symbol=Globe}" Text="{strings:Resources Key=AddUrl}">
+                                   Glyph={StaticResource FolderListGlyph}}"
+                Text="{x:Bind strings:Resources.AddFolder}" />
+            <MenuFlyoutItem
+                AccessKey="{x:Bind strings:KeyboardResources.MenuItemUrlKey}"
+                Icon="{ui:SymbolIcon Symbol=Globe}"
+                KeyTipPlacementMode="Left"
+                Text="{x:Bind strings:Resources.AddUrl}">
                 <MenuFlyoutItem.Command>
                     <commands:OpenUrlCommand NextCommand="{x:Bind ViewModel.AddUrlCommand}" />
                 </MenuFlyoutItem.Command>
@@ -39,8 +48,8 @@
     <Grid
         AllowDrop="True"
         Background="Transparent"
-        DragOver="{x:Bind PlaylistView.PlaylistListView_OnDragOver}"
-        Drop="{x:Bind PlaylistView.PlaylistListView_OnDrop}">
+        DragOver="{x:Bind PlayQueue.PlaylistListView_OnDragOver}"
+        Drop="{x:Bind PlayQueue.PlaylistListView_OnDrop}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -51,40 +60,60 @@
             Grid.Row="0"
             MinHeight="{StaticResource PageHeaderMinHeight}"
             Margin="{StaticResource BottomMediumMargin}"
-            Padding="{StaticResource ContentPagePadding}">
+            Padding="{StaticResource ContentPagePadding}"
+            ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
             <TextBlock
-                HorizontalAlignment="Left"
-                Style="{StaticResource PageHeaderTextBlockStyle}"
-                Text="{strings:Resources Key=PlayQueue}" />
-            <muxc:SplitButton
+                Grid.Column="0"
+                Style="{StaticResource TitleMediumTextBlockStyle}"
+                Text="{x:Bind strings:Resources.PlayQueue}"
+                TextWrapping="NoWrap">
+                <interactivity:Interaction.Behaviors>
+                    <behaviors:OverflowTextToolTipBehavior />
+                </interactivity:Interaction.Behaviors>
+            </TextBlock>
+
+            <sbuc:SplitButtonEx
                 x:Name="HeaderAddButton"
-                HorizontalAlignment="Right"
+                Grid.Column="1"
                 VerticalAlignment="Top"
-                AutomationProperties.Name="{strings:Resources Key=AddFiles}"
-                Command="{x:Bind PlaylistView.ViewModel.AddFilesCommand}"
+                AutomationProperties.HelpText="{x:Bind strings:Resources.AddFilesToPlayQueueToolTip}"
+                AutomationProperties.Name="{x:Bind HeaderAddButtonText.Text}"
+                Command="{x:Bind PlayQueue.ViewModel.AddFilesCommand}"
                 Flyout="{StaticResource AddToPlayQueueFlyout}"
-                ToolTipService.ToolTip="{strings:Resources Key=AddFilesToPlayQueueToolTip}">
+                IsSecondaryButtonTabStop="True"
+                PrimaryButtonAccessKey="{x:Bind strings:KeyboardResources.CommandAddOpenFilesKey}"
+                PrimaryButtonToolTip="{x:Bind strings:Resources.AddFilesToPlayQueueToolTip}"
+                SecondaryButtonAccessKey="{x:Bind strings:KeyboardResources.CommandMoreOptionsKey}"
+                SecondaryButtonToolTip="{x:Bind strings:Resources.AddFilesToPlayQueueSecondaryToolTip}"
+                Style="{StaticResource DefaultSplitButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <FontIcon Glyph="&#xE838;" />
+                    <FontIcon
+                        Margin="{StaticResource IconButtonStandardIconMargin}"
+                        FontFamily="{StaticResource ScreenboxSymbolThemeFontFamily}"
+                        Glyph="{StaticResource FolderOpenGlyph}" />
                     <TextBlock
                         x:Name="HeaderAddButtonText"
                         Margin="8,0,0,0"
-                        Text="{strings:Resources Key=AddFiles}" />
+                        Text="{x:Bind strings:Resources.AddFiles}" />
                 </StackPanel>
                 <interactivity:Interaction.Behaviors>
-                    <interactions:SplitButtonXYNavigationBehavior />
-                    <interactions:AutoFocusBehavior />
+                    <behaviors:AutoFocusBehavior />
                 </interactivity:Interaction.Behaviors>
-            </muxc:SplitButton>
+            </sbuc:SplitButtonEx>
         </Grid>
 
-        <controls:PlaylistView
-            x:Name="PlaylistView"
+        <controls:PlayQueueControl
+            x:Name="PlayQueue"
             Grid.Row="1"
             Padding="{StaticResource ContentPagePadding}" />
 
         <interactivity:Interaction.Behaviors>
-            <interactions:GamepadXYNavigationBehavior />
+            <behaviors:GamepadXYNavigationBehavior />
         </interactivity:Interaction.Behaviors>
 
         <VisualStateManager.VisualStateGroups>
@@ -93,16 +122,25 @@
                 <VisualState x:Name="Compact" />
                 <VisualState x:Name="Minimal">
                     <VisualState.StateTriggers>
-                        <triggers:IsEqualStateTrigger Value="{x:Bind Common.NavigationViewDisplayMode, Mode=OneWay}">
-                            <triggers:IsEqualStateTrigger.To>
-                                <muxc:NavigationViewDisplayMode>Minimal</muxc:NavigationViewDisplayMode>
-                            </triggers:IsEqualStateTrigger.To>
-                        </triggers:IsEqualStateTrigger>
+                        <ui:IsEqualStateTrigger Value="{x:Bind Common.NavigationViewDisplayMode, Mode=OneWay}" To="{StaticResource MinimalNavigationViewDisplayMode}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="HeaderGrid.Padding" Value="{StaticResource ContentPageMinimalPadding}" />
                         <Setter Target="HeaderAddButtonText.Visibility" Value="Collapsed" />
-                        <Setter Target="PlaylistView.Padding" Value="{StaticResource ContentPageMinimalPadding}" />
+                        <Setter Target="PlayQueue.Padding" Value="{StaticResource ContentPageMinimalPadding}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <VisualStateGroup x:Name="FlowDirectionStates">
+                <VisualState x:Name="LeftToRight" />
+
+                <VisualState x:Name="RightToLeft">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind helpers:GlobalizationHelper.IsRightToLeftLanguage}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="AddToPlayQueueMenuFlyoutFolderItem.Icon" Value="{ui:FontIcon FontFamily={StaticResource ScreenboxSymbolThemeFontFamily}, Glyph={StaticResource FolderListMirroredGlyph}}" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

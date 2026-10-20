@@ -1,10 +1,9 @@
-﻿#nullable enable
-
-using Screenbox.Core.Enums;
 using System;
+using Screenbox.Core.Enums;
 using Windows.Storage.FileProperties;
 
 namespace Screenbox.Core.Models;
+
 public sealed class MediaInfo
 {
     public MediaPlaybackType MediaType { get; set; }
@@ -17,25 +16,39 @@ public sealed class MediaInfo
 
     public DateTimeOffset DateModified { get; }
 
-    public MediaInfo(MediaPlaybackType mediaType)
+    public MediaInfo(MediaPlaybackType mediaType, string title = "", uint year = default, TimeSpan duration = default)
     {
         MediaType = mediaType;
         VideoProperties = new VideoInfo();
         MusicProperties = new MusicInfo();
+
+        VideoProperties.Title = title;
+        VideoProperties.Duration = duration;
+        VideoProperties.Year = year;
+        MusicProperties.Title = title;
+        MusicProperties.Duration = duration;
+        MusicProperties.Year = year;
     }
 
-    public MediaInfo(MusicInfo musicProperties)
+    internal MediaInfo(IMediaProperties properties)
     {
-        MediaType = MediaPlaybackType.Music;
-        MusicProperties = musicProperties;
-        VideoProperties = new VideoInfo();
-    }
-
-    public MediaInfo(VideoInfo videoProperties)
-    {
-        MediaType = MediaPlaybackType.Video;
-        MusicProperties = new MusicInfo();
-        VideoProperties = videoProperties;
+        MediaType = MediaPlaybackType.Unknown;
+        if (properties is MusicInfo musicProperties)
+        {
+            MediaType = MediaPlaybackType.Music;
+            MusicProperties = musicProperties;
+            VideoProperties = new VideoInfo();
+        }
+        else if (properties is VideoInfo videoProperties)
+        {
+            MediaType = MediaPlaybackType.Video;
+            MusicProperties = new MusicInfo();
+            VideoProperties = videoProperties;
+        }
+        else
+        {
+            throw new ArgumentException("Invalid media properties type.");
+        }
     }
 
     public MediaInfo(BasicProperties basicProperties, MusicProperties musicProperties)

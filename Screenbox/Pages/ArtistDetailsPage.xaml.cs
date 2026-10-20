@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations.Expressions;
 using Screenbox.Core;
 using Screenbox.Core.ViewModels;
-using System;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -14,155 +14,168 @@ using NavigationViewDisplayMode = Windows.UI.Xaml.Controls.NavigationViewDisplay
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Screenbox.Pages
+namespace Screenbox.Pages;
+
+/// <summary>
+/// An empty page that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class ArtistDetailsPage : Page
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class ArtistDetailsPage : Page
+    internal ArtistDetailsPageViewModel ViewModel => (ArtistDetailsPageViewModel)DataContext;
+
+    internal CommonViewModel Common { get; }
+
+    private int ClampSize => Common.NavigationViewDisplayMode == NavigationViewDisplayMode.Minimal ? 64 : 96;
+
+    private float BackgroundScaleFactor => Common.NavigationViewDisplayMode == NavigationViewDisplayMode.Minimal ? 0.75f : 0.625f;
+
+    private float CoverScaleFactor => Common.NavigationViewDisplayMode == NavigationViewDisplayMode.Minimal ? 0.6f : 0.5f;
+
+    private int ButtonPanelOffset => Common.NavigationViewDisplayMode == NavigationViewDisplayMode.Minimal ? 56 : 64;
+
+    private CompositionPropertySet? _props;
+    private CompositionPropertySet? _scrollerPropertySet;
+    private Compositor? _compositor;
+    private ScrollViewer? _scrollViewer;
+
+    public ArtistDetailsPage()
     {
-        internal ArtistDetailsPageViewModel ViewModel => (ArtistDetailsPageViewModel)DataContext;
+        this.InitializeComponent();
+        DataContext = Ioc.Default.GetRequiredService<ArtistDetailsPageViewModel>();
+        Common = Ioc.Default.GetRequiredService<CommonViewModel>();
+    }
 
-        internal CommonViewModel Common { get; }
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        ViewModel.OnNavigatedTo(e.Parameter);
+    }
 
-        private int ClampSize => Common.NavigationViewDisplayMode == NavigationViewDisplayMode.Minimal ? 58 : 98;
+    private void ArtistDetailsPage_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // Set initial visual state
+        VisualStateManager.GoToState(this, Common.NavigationViewDisplayMode.ToString(), false);
 
-        private CompositionPropertySet? _props;
-        private CompositionPropertySet? _scrollerPropertySet;
-        private Compositor? _compositor;
-        private ScrollViewer? _scrollViewer;
+        // Retrieve the ScrollViewer that the GridView is using internally
+        ScrollViewer scrollViewer = _scrollViewer = ItemList.FindDescendant<ScrollViewer>() ??
+                                                    throw new Exception("Cannot find ScrollViewer in ListView");
 
-        public ArtistDetailsPage()
-        {
-            this.InitializeComponent();
-            DataContext = Ioc.Default.GetRequiredService<ArtistDetailsPageViewModel>();
-            Common = Ioc.Default.GetRequiredService<CommonViewModel>();
-        }
+        // Get the PropertySet that contains the scroll values from the ScrollViewer
+        _scrollerPropertySet = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(scrollViewer);
+        _compositor = _scrollerPropertySet.Compositor;
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            ViewModel.OnNavigatedTo(e.Parameter);
-        }
+        // Create a PropertySet that has values to be referenced in the ExpressionAnimations below
+        _props = _compositor.CreatePropertySet();
+        _props.InsertScalar("progress", 0);
+        _props.InsertScalar("clampSize", ClampSize);
+        _props.InsertScalar("backgroundScaleFactor", BackgroundScaleFactor);
+        _props.InsertScalar("coverScaleFactor", CoverScaleFactor);
+        _props.InsertScalar("buttonPanelOffset", ButtonPanelOffset);
+        _props.InsertScalar("headerPadding", 12);
 
-        private void ArtistDetailsPage_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            // Set initial visual state
-            VisualStateManager.GoToState(this, Common.NavigationViewDisplayMode.ToString(), false);
+        // Get references to our property sets for use with ExpressionNodes
+        ManipulationPropertySetReferenceNode scrollingProperties = _scrollerPropertySet.GetSpecializedReference<ManipulationPropertySetReferenceNode>();
 
-            // Retrieve the ScrollViewer that the GridView is using internally
-            ScrollViewer scrollViewer = _scrollViewer = ItemList.FindDescendant<ScrollViewer>() ??
-                                                        throw new Exception("Cannot find ScrollViewer in ListView");
-            scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
+        CreateHeaderAnimation(_props, scrollingProperties.Translation.Y);
+    }
 
-            // Get the PropertySet that contains the scroll values from the ScrollViewer
-            _scrollerPropertySet = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(scrollViewer);
-            _compositor = _scrollerPropertySet.Compositor;
+    /// <summary>
+    /// Create the animations that, during vertical scrolling, will gradually shrink the cover art, narrow the Y axis and fade in the background,
+    /// include padding around the content, fade out the additional text blocks and fill the empty space left with the button panel.
+    /// </summary>  
+    /// <param name="propSet">A collection of properties values that are referenced to drive portions of the composition animations.</param>
+    /// <param name="scrollVerticalOffset">A property set who has Translation.Y specified, the return from ElementCompositionPreview.GetScrollViewerManipulationPropertySet(...).</param>
+    private void CreateHeaderAnimation(CompositionPropertySet propSet, ScalarNode scrollVerticalOffset)
+    {
+        PropertySetReferenceNode props = propSet.GetReference();
+        ScalarNode progressNode = props.GetScalarProperty("progress");
+        ScalarNode clampSizeNode = props.GetScalarProperty("clampSize");
+        ScalarNode backgroundScaleFactorNode = props.GetScalarProperty("backgroundScaleFactor");
+        ScalarNode coverScaleFactorNode = props.GetScalarProperty("coverScaleFactor");
+        ScalarNode buttonPanelOffsetNode = props.GetScalarProperty("buttonPanelOffset");
+        ScalarNode headerPaddingNode = props.GetScalarProperty("headerPadding");
 
-            // Create a PropertySet that has values to be referenced in the ExpressionAnimations below
-            _props = _compositor.CreatePropertySet();
-            _props.InsertScalar("progress", 0);
-            _props.InsertScalar("clampSize", ClampSize);
-            _props.InsertScalar("bottomMargin", (float)ButtonPanel.Margin.Bottom);
+        // Create and start an ExpressionAnimation to track scroll progress over the desired distance
+        ExpressionNode progressAnimation = EF.Clamp(-scrollVerticalOffset / clampSizeNode, 0, 1);
+        propSet.StartAnimation("progress", progressAnimation);
 
-            // Get references to our property sets for use with ExpressionNodes
-            ManipulationPropertySetReferenceNode scrollingProperties = _scrollerPropertySet.GetSpecializedReference<ManipulationPropertySetReferenceNode>();
+        // Get the backing visual for the background in the header so that its properties can be animated
+        Visual backgroundVisual = ElementCompositionPreview.GetElementVisual(BackgroundAcrylic);
 
-            CreateHeaderAnimation(_props, scrollingProperties.Translation.Y);
-        }
+        // Create and start an ExpressionAnimation to scale and opacity fade in the backgound behind the header
+        ExpressionNode backgroundScaleAnimation = EF.Lerp(1, backgroundScaleFactorNode, progressNode);
+        ExpressionNode backgroundOpacityAnimation = progressNode;
+        backgroundVisual.StartAnimation("Scale.Y", backgroundScaleAnimation);
+        backgroundVisual.StartAnimation("Opacity", backgroundOpacityAnimation);
 
-        private void CreateHeaderAnimation(CompositionPropertySet propSet, ScalarNode scrollVerticalOffset)
-        {
-            PropertySetReferenceNode props = propSet.GetReference();
-            ScalarNode progressNode = props.GetScalarProperty("progress");
-            ScalarNode clampSizeNode = props.GetScalarProperty("clampSize");
-            ScalarNode bottomMarginNode = props.GetScalarProperty("bottomMargin");
+        // Get the backing visuals for the content container so that its properties can be animated
+        Visual contentVisual = ElementCompositionPreview.GetElementVisual(ContentContainer);
+        ElementCompositionPreview.SetIsTranslationEnabled(ContentContainer, true);
 
-            // Create and start an ExpressionAnimation to track scroll progress over the desired distance
-            ExpressionNode progressAnimation = EF.Clamp(-scrollVerticalOffset / clampSizeNode, 0, 1);
-            propSet.StartAnimation("progress", progressAnimation);
+        // Create and start an ExpressionAnimation to move the content container with scroll position
+        ExpressionNode contentTranslationAnimation = progressNode * headerPaddingNode;
+        contentVisual.StartAnimation("Translation.Y", contentTranslationAnimation);
 
-            // Get the backing visual for the photo in the header so that its properties can be animated
-            Visual photoVisual = ElementCompositionPreview.GetElementVisual(BackgroundAcrylic);
+        // Get the backing visual for the cover art visual so that its properties can be animated
+        Visual coverArtVisual = ElementCompositionPreview.GetElementVisual(CoverArt);
+        ElementCompositionPreview.SetIsTranslationEnabled(CoverArt, true);
 
-            // Create and start an ExpressionAnimation to opacity fade out the image behind the header
-            ExpressionNode imageOpacityAnimation = progressNode;
-            photoVisual.StartAnimation("Opacity", imageOpacityAnimation);
+        // Create and start an ExpressionAnimation to scale and move the cover art with scroll position
+        ExpressionNode coverArtScaleAnimation = EF.Lerp(1, coverScaleFactorNode, progressNode);
+        ExpressionNode coverArtTranslationAnimation = progressNode * headerPaddingNode;
+        coverArtVisual.StartAnimation("Scale.X", coverArtScaleAnimation);
+        coverArtVisual.StartAnimation("Scale.Y", coverArtScaleAnimation);
+        coverArtVisual.StartAnimation("Translation.X", coverArtTranslationAnimation);
 
-            // Get the backing visual for the profile picture visual so that its properties can be animated
-            Visual albumArtVisual = ElementCompositionPreview.GetElementVisual(ProfilePicture);
-            ElementCompositionPreview.SetIsTranslationEnabled(ProfilePicture, true);
+        // Get the backing visual for the text panel so that its properties can be animated
+        Visual textVisual = ElementCompositionPreview.GetElementVisual(TextPanel);
+        ElementCompositionPreview.SetIsTranslationEnabled(TextPanel, true);
 
-            // Create and start an ExpressionAnimation to scale the profile image with scroll position
-            ScalarNode scaleFactorNode = 1 - clampSizeNode / albumArtVisual.GetReference().Size.X;
-            ExpressionNode scaleAnimation = EF.Lerp(1, scaleFactorNode, progressNode);
-            ExpressionNode albumArtTranslateAnimation = progressNode * 10;
-            albumArtVisual.StartAnimation("Scale.X", scaleAnimation);
-            albumArtVisual.StartAnimation("Scale.Y", scaleAnimation);
-            albumArtVisual.StartAnimation("Translation.X", albumArtTranslateAnimation);
+        // Create and start an ExpressionAnimation to move the text panel with scroll position
+        ExpressionNode textTranslationAnimation = progressNode * (-clampSizeNode + headerPaddingNode);
+        textVisual.StartAnimation("Translation.X", textTranslationAnimation);
 
-            // Get the backing visual for the title panel visual so that its properties can be animated
-            Visual titleVisual = ElementCompositionPreview.GetElementVisual(TitlePanel);
-            ElementCompositionPreview.SetIsTranslationEnabled(TitlePanel, true);
+        // Get backing visuals for the additional text blocks so that their properties can be animated
+        Visual subtitleVisual = ElementCompositionPreview.GetElementVisual(SubtitleText);
+        Visual captionVisual = ElementCompositionPreview.GetElementVisual(CaptionText);
 
-            // Create and start and ExpressionAnimation to translate title text
-            ExpressionNode titleTranslationXAnimation = progressNode * (-clampSizeNode + 5);
-            titleVisual.StartAnimation("Translation.X", titleTranslationXAnimation);
+        // Create an ExpressionAnimation that start opacity fade out animation with threshold for the additional text blocks
+        ScalarNode fadeThreshold = ExpressionValues.Constant.CreateConstantScalar("fadeThreshold", 0.6f);
+        ExpressionNode textFadeAnimation = 1 - EF.Conditional(progressNode < fadeThreshold, progressNode / fadeThreshold, 1);
 
-            // Get the backing visual for artist name and subtext
-            Visual artistNameVisual = ElementCompositionPreview.GetElementVisual(Subtext);
+        // Start opacity fade out animation on the additional text block visuals
+        subtitleVisual.StartAnimation("Opacity", textFadeAnimation);
+        textFadeAnimation.SetScalarParameter("fadeThreshold", 0.2f);
+        captionVisual.StartAnimation("Opacity", textFadeAnimation);
 
-            // Create and start fade animation with threshold for subtexts
-            ScalarNode fadeThreshold = ExpressionValues.Constant.CreateConstantScalar("fadeThreshold", 0.6f);
-            ExpressionNode textFadeAnimation = 1 - EF.Conditional(progressNode < fadeThreshold, progressNode / fadeThreshold, 1);
-            artistNameVisual.StartAnimation("Opacity", textFadeAnimation);
+        // Get the backing visual for the button panel so that its properties can be animated
+        Visual buttonVisual = ElementCompositionPreview.GetElementVisual(ButtonPanel);
+        ElementCompositionPreview.SetIsTranslationEnabled(ButtonPanel, true);
 
-            // Get the backing visuals for the button containers so that their properties can be animated
-            Visual buttonVisual = ElementCompositionPreview.GetElementVisual(ButtonPanel);
-            ElementCompositionPreview.SetIsTranslationEnabled(ButtonPanel, true);
+        // Create and start an ExpressionAnimation to move the button panel with scroll position
+        ExpressionNode buttonTranslationAnimation = progressNode * (-buttonPanelOffsetNode);
+        buttonVisual.StartAnimation("Translation.Y", buttonTranslationAnimation);
+    }
 
-            ExpressionNode buttonTranslationYAnimation = progressNode * (-clampSizeNode + bottomMarginNode);
-            buttonVisual.StartAnimation("Translation.X", titleTranslationXAnimation);
-            buttonVisual.StartAnimation("Translation.Y", buttonTranslationYAnimation);
-        }
+    private void ProfilePicture_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        _props?.InsertScalar("clampSize", ClampSize);
+        _props?.InsertScalar("backgroundScaleFactor", BackgroundScaleFactor);
+        _props?.InsertScalar("coverScaleFactor", CoverScaleFactor);
+        _props?.InsertScalar("buttonPanelOffset", ButtonPanelOffset);
+    }
 
-        private void ProfilePicture_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            _props?.InsertScalar("clampSize", ClampSize);
-            _props?.InsertScalar("bottomMargin", (float)ButtonPanel.Margin.Bottom);
-            UpdateBackgroundAcrylicSize(_scrollViewer?.VerticalOffset ?? 0);
-        }
+    private Thickness GetScrollbarVerticalMargin(Thickness value)
+    {
+        double headerHeight = CoverArt.Height + Header.Margin.Bottom;
+        return new Thickness(value.Left, value.Top - headerHeight, value.Right, value.Bottom);
+    }
 
-        private void ScrollViewerOnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-        {
-            UpdateBackgroundAcrylicSize(e.NextView.VerticalOffset);
-        }
-
-        private void UpdateBackgroundAcrylicSize(double scrollVerticalOffset)
-        {
-            // Animating visual size does not work. This is a work around.
-            double progress = Math.Clamp(scrollVerticalOffset / ClampSize, 0, 1);
-            double maxHeight = Header.Height;
-            double minHeight = 102;
-            BackgroundAcrylic.Height = maxHeight + (minHeight - maxHeight) * progress;
-
-            // There is no way to detect over panning (i.e. scrollviewer translate but no view change)
-            // Hide the background acrylic when the vertical srollbar is not visible where over panning is an issue
-            BackgroundAcrylic.Visibility = _scrollViewer?.ComputedVerticalScrollBarVisibility ?? Visibility.Collapsed;
-        }
-
-        private Thickness GetScrollbarVerticalMargin(Thickness value)
-        {
-            double headerHeight = Header.Height + Header.Margin.Bottom;
-            return new Thickness(value.Left, value.Top - headerHeight, value.Right, value.Bottom);
-        }
-
-        private static string GetSubtext(int albumsCount, int songsCount, TimeSpan duration)
-        {
-            string albumsCountText = Strings.Resources.AlbumsCount(albumsCount);
-            string songsCountText = Strings.Resources.SongsCount(songsCount);
-            string runTime = Strings.Resources.RunTime(Humanizer.ToDuration(duration));
-            return $"{albumsCountText} • {songsCountText} • {runTime}";
-        }
+    private string GetSubtext(int albumsCount, int songsCount, TimeSpan duration)
+    {
+        string albumsCountText = Strings.Resources.AlbumsCount(albumsCount);
+        string songsCountText = Strings.Resources.SongsCount(songsCount);
+        string runTime = Strings.Resources.RunTime(Humanizer.ToDuration(duration));
+        return $"{albumsCountText} • {songsCountText} • {runTime}";
     }
 }

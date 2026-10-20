@@ -1,92 +1,114 @@
-﻿#nullable enable
-
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.AppCenter.Analytics;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core.Contexts;
 using Screenbox.Core.Events;
 using Screenbox.Core.Models;
+using Screenbox.Core.Playback;
 using Screenbox.Core.Services;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class CastControlViewModel : ObservableObject
 {
-    public sealed partial class CastControlViewModel : ObservableObject
+    public ObservableCollection<Renderer> Renderers { get; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CastCommand))]
+    public partial Renderer? SelectedRenderer { get; set; }
+
+    [ObservableProperty] public partial Renderer? CastingDevice { get; set; }
+    [ObservableProperty] public partial bool IsCasting { get; set; }
+
+    private IMediaPlayer? MediaPlayer => _playerContext.MediaPlayer;
+
+    private readonly PlayerContext _playerContext;
+    private readonly CastContext _castContext;
+    private readonly ICastService _castService;
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly ILogger<CastControlViewModel> _logger;
+
+    public CastControlViewModel(PlayerContext playerContext, CastContext castContext, ICastService castService,
+        ILogger<CastControlViewModel> logger)
     {
-        public ObservableCollection<Renderer> Renderers { get; }
+        _playerContext = playerContext;
+        _castContext = castContext;
+        _castService = castService;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _logger = logger;
+        Renderers = new ObservableCollection<Renderer>();
+    }
 
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(CastControlViewModel.CastCommand))]
-        private Renderer? _selectedRenderer;
+    public void StartDiscovering()
+    {
+        if (IsCasting || MediaPlayer == null) return;
 
-        [ObservableProperty] private Renderer? _castingDevice;
-        [ObservableProperty] private bool _isCasting;
+        var watcher = _castService.CreateRendererWatcher(MediaPlayer);
+        _castContext.RendererWatcher = watcher;
+        watcher.RendererFound += RendererWatcherOnRendererFound;
+        watcher.RendererLost += RendererWatcherOnRendererLost;
+        watcher.Start();
+    }
 
-        private readonly ICastService _castService;
-        private readonly DispatcherQueue _dispatcherQueue;
-
-        public CastControlViewModel(ICastService castService)
+    public void StopDiscovering()
+    {
+        var watcher = _castContext.RendererWatcher;
+        if (watcher != null)
         {
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _castService = castService;
-            _castService.RendererFound += CastServiceOnRendererFound;
-            _castService.RendererLost += CastServiceOnRendererLost;
-            Renderers = new ObservableCollection<Renderer>();
+            watcher.RendererFound -= RendererWatcherOnRendererFound;
+            watcher.RendererLost -= RendererWatcherOnRendererLost;
+            watcher.Stop();
+            watcher.Dispose();
+            _castContext.RendererWatcher = null;
         }
 
-        public void StartDiscovering()
-        {
-            if (IsCasting) return;
-            _castService.Start();
-        }
+        SelectedRenderer = null;
+        Renderers.Clear();
+    }
 
-        public void StopDiscovering()
+    [RelayCommand(CanExecute = nameof(CanCast))]
+    private void Cast()
+    {
+        if (SelectedRenderer == null || MediaPlayer == null) return;
+        _logger.LogInformation("Start casting. {RendererHash} {RendererType} {CanRenderAudio} {CanRenderVideo}",
+            SelectedRenderer.Name.GetHashCode(),
+            SelectedRenderer.Type,
+            SelectedRenderer.CanRenderAudio,
+            SelectedRenderer.CanRenderVideo);
+        if (_castService.SetActiveRenderer(MediaPlayer, SelectedRenderer))
         {
-            _castService.Stop();
-            SelectedRenderer = null;
-            Renderers.Clear();
-        }
-
-        [RelayCommand(CanExecute = nameof(CanCast))]
-        private void Cast()
-        {
-            if (SelectedRenderer == null) return;
-            _castService.SetActiveRenderer(SelectedRenderer);
+            _castContext.ActiveRenderer = SelectedRenderer;
             CastingDevice = SelectedRenderer;
             IsCasting = true;
-            Analytics.TrackEvent("StartCasting", new Dictionary<string, string>
-            {
-                {"rendererHash", SelectedRenderer.Name.GetHashCode().ToString()},
-                {"type", SelectedRenderer.Type},
-                {"canRenderAudio", SelectedRenderer.CanRenderAudio.ToString()},
-                {"canRenderVideo", SelectedRenderer.CanRenderVideo.ToString()},
-            });
         }
+    }
 
-        private bool CanCast() => SelectedRenderer is { IsAvailable: true };
+    private bool CanCast() => SelectedRenderer is { IsAvailable: true };
 
-        [RelayCommand]
-        private void StopCasting()
+    [RelayCommand]
+    private void StopCasting()
+    {
+        if (MediaPlayer == null) return;
+        _logger.LogInformation("Stop casting.");
+        _castService.SetActiveRenderer(MediaPlayer, null);
+        _castContext.ActiveRenderer = null;
+        IsCasting = false;
+        StartDiscovering();
+    }
+
+    private void RendererWatcherOnRendererLost(object? sender, RendererLostEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            _castService.SetActiveRenderer(null);
-            IsCasting = false;
-            StartDiscovering();
-            Analytics.TrackEvent("StopCasting");
-        }
+            Renderers.Remove(e.Renderer);
+            if (SelectedRenderer == e.Renderer) SelectedRenderer = null;
+        });
+    }
 
-        private void CastServiceOnRendererLost(object sender, RendererLostEventArgs e)
-        {
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                Renderers.Remove(e.Renderer);
-                if (SelectedRenderer == e.Renderer) SelectedRenderer = null;
-            });
-        }
-
-        private void CastServiceOnRendererFound(object sender, RendererFoundEventArgs e)
-        {
-            _dispatcherQueue.TryEnqueue(() => Renderers.Add(e.Renderer));
-        }
+    private void RendererWatcherOnRendererFound(object? sender, RendererFoundEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() => Renderers.Add(e.Renderer));
     }
 }

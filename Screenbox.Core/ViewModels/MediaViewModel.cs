@@ -1,359 +1,404 @@
-﻿#nullable enable
-
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using LibVLCSharp.Shared;
+using Screenbox.Core.Contexts;
 using Screenbox.Core.Enums;
-using Screenbox.Core.Factories;
 using Screenbox.Core.Helpers;
 using Screenbox.Core.Messages;
 using Screenbox.Core.Models;
 using Screenbox.Core.Playback;
 using Screenbox.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class MediaViewModel : ObservableRecipient
 {
-    public partial class MediaViewModel : ObservableRecipient
+    public string Location { get; }
+
+    public object Source { get; private set; }
+
+    public bool IsFromLibrary { get; set; }
+
+    public bool DetailsLoaded { get; private set; }
+
+    public ArtistViewModel? MainArtist => Artists.FirstOrDefault();
+
+    public Lazy<PlaybackItem?> Item { get; internal set; }
+
+    public IReadOnlyList<string> Options { get; }
+
+    public DateTimeOffset DateAdded { get; set; }
+
+    public MediaPlaybackType MediaType => MediaInfo.MediaType;
+
+    public TimeSpan Duration => MediaInfo.MusicProperties.Duration > TimeSpan.Zero
+        ? MediaInfo.MusicProperties.Duration
+        : MediaInfo.VideoProperties.Duration;
+
+    public string TrackNumberText =>
+        MediaInfo.MusicProperties.TrackNumber > 0 ? MediaInfo.MusicProperties.TrackNumber.ToString() : string.Empty;    // Helper for binding
+
+    public BitmapImage? Thumbnail
     {
-        public string Location { get; }
-
-        public object Source { get; private set; }
-
-        public bool IsFromLibrary { get; set; }
-
-        public StorageItemThumbnail? ThumbnailSource { get; set; }
-
-        public ArtistViewModel? MainArtist => Artists.FirstOrDefault();
-
-        public Lazy<PlaybackItem?> Item { get; internal set; }
-
-        public IReadOnlyList<string> Options { get; }
-
-        public MediaPlaybackType MediaType => MediaInfo.MediaType;
-
-        public TimeSpan Duration => MediaInfo.MusicProperties.Duration > TimeSpan.Zero
-            ? MediaInfo.MusicProperties.Duration
-            : MediaInfo.VideoProperties.Duration;
-
-        public string DurationText => Duration > TimeSpan.Zero ? Humanizer.ToDuration(Duration) : string.Empty;     // Helper for binding
-
-        public string TrackNumberText =>
-            MediaInfo.MusicProperties.TrackNumber > 0 ? MediaInfo.MusicProperties.TrackNumber.ToString() : string.Empty;    // Helper for binding
-
-        private readonly LibVlcService _libVlcService;
-        private readonly List<string> _options;
-
-        [ObservableProperty] private string _name;
-        [ObservableProperty] private bool _isMediaActive;
-        [ObservableProperty] private BitmapImage? _thumbnail;
-        [ObservableProperty] private AlbumViewModel? _album;
-        [ObservableProperty] private string? _caption;  // For list item subtitle
-        [ObservableProperty] private string? _altCaption;   // For player page subtitle
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DurationText))]
-        [NotifyPropertyChangedFor(nameof(TrackNumberText))]
-        private MediaInfo _mediaInfo;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(MainArtist))]
-        private ArtistViewModel[] _artists;
-
-        [ObservableProperty]
-        private bool? _isPlaying;
-
-        public MediaViewModel(MediaViewModel source)
+        get
         {
-            _libVlcService = source._libVlcService;
-            _name = source._name;
-            _thumbnail = source._thumbnail;
-            _mediaInfo = source._mediaInfo;
-            _artists = source._artists;
-            _album = source._album;
-            _caption = source._caption;
-            _altCaption = source._altCaption;
-            _options = new List<string>(source.Options);
-            Options = new ReadOnlyCollection<string>(_options);
-            Location = source.Location;
-            Source = source.Source;
-            Item = source.Item;
+            if (_thumbnailRef == null) return null;
+            return _thumbnailRef.TryGetTarget(out BitmapImage? image) ? image : null;
+        }
+        set
+        {
+            if (_thumbnailRef == null && value == null) return;
+            if ((_thumbnailRef?.TryGetTarget(out BitmapImage? image) ?? false) && image == value) return;
+            SetProperty(ref _thumbnailRef, value == null ? null : new WeakReference<BitmapImage>(value));
+        }
+    }
+
+    private IMediaPlayer? MediaPlayer => _playerContext.MediaPlayer;
+
+    private readonly IPlayerService _playerService;
+    private readonly PlayerContext _playerContext;
+    private readonly List<string> _options;
+
+    [ObservableProperty] public partial string Name { get; set; } = string.Empty;
+    [ObservableProperty] public partial bool IsMediaActive { get; set; }
+    [ObservableProperty] public partial bool IsAvailable { get; set; } = true;
+    [ObservableProperty] public partial AlbumViewModel? Album { get; set; }
+    [ObservableProperty] public partial string Caption { get; set; } = string.Empty;  // For list item subtitle
+    [ObservableProperty] public partial string AltCaption { get; set; } = string.Empty;   // For player page subtitle
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TrackNumberText))]
+    public partial MediaInfo MediaInfo { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MainArtist))]
+    public partial ArtistViewModel[] Artists { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsPlaying { get; set; }
+
+    private WeakReference<BitmapImage>? _thumbnailRef;
+
+    public MediaViewModel(MediaViewModel source)
+    {
+        _playerService = source._playerService;
+        _playerContext = source._playerContext;
+        Name = source.Name;
+        _thumbnailRef = source._thumbnailRef;
+        MediaInfo = source.MediaInfo;
+        Artists = source.Artists;
+        Album = source.Album;
+        Caption = source.Caption;
+        AltCaption = source.AltCaption;
+        _options = new List<string>(source.Options);
+        Options = new ReadOnlyCollection<string>(_options);
+        Location = source.Location;
+        Source = source.Source;
+        Item = new Lazy<PlaybackItem?>(CreatePlaybackItem);
+        DateAdded = source.DateAdded;
+        IsFromLibrary = source.IsFromLibrary;
+        DetailsLoaded = source.DetailsLoaded;
+    }
+
+    private MediaViewModel(object source, MediaInfo mediaInfo, PlayerContext playerContext, IPlayerService playerService)
+    {
+        _playerService = playerService;
+        _playerContext = playerContext;
+        Source = source;
+        Location = string.Empty;
+        DateAdded = DateTimeOffset.Now;
+        Name = string.Empty;
+        MediaInfo = mediaInfo;
+        Artists = Array.Empty<ArtistViewModel>();
+        _options = new List<string>();
+        Options = new ReadOnlyCollection<string>(_options);
+        Item = new Lazy<PlaybackItem?>(CreatePlaybackItem);
+    }
+
+    public MediaViewModel(PlayerContext playerContext, IPlayerService playerService, StorageFile file)
+        : this(file, new MediaInfo(FilesHelpers.GetMediaTypeForFile(file)), playerContext, playerService)
+    {
+        Location = file.Path;
+        Name = file.Name;
+        AltCaption = file.Name;
+    }
+
+    public MediaViewModel(PlayerContext playerContext, IPlayerService playerService, Uri uri)
+        : this(uri, new MediaInfo(MediaPlaybackType.Unknown), playerContext, playerService)
+    {
+        Guard.IsTrue(uri.IsAbsoluteUri);
+        Location = uri.OriginalString;
+        Name = uri.Segments.Length > 0 ? Uri.UnescapeDataString(uri.Segments.Last()) : string.Empty;
+    }
+
+    public MediaViewModel(PlayerContext playerContext, IPlayerService playerService, Media media)
+        : this(media, new MediaInfo(MediaPlaybackType.Unknown), playerContext, playerService)
+    {
+        Location = media.Mrl;
+
+        // Media is already loaded, create PlaybackItem
+        Item = new Lazy<PlaybackItem?>(new PlaybackItem(media, media));
+    }
+
+    partial void OnMediaInfoChanged(MediaInfo value)
+    {
+        UpdateCaptions();
+    }
+
+    private PlaybackItem? CreatePlaybackItem()
+    {
+        if (MediaPlayer == null)
+        {
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.MediaLoadFailed, message: $"Media player is not initialized{Environment.NewLine}{Location}"));
+            return null;
         }
 
-        private MediaViewModel(object source, MediaInfo mediaInfo, LibVlcService libVlcService)
+        PlaybackItem? item = null;
+        try
         {
-            _libVlcService = libVlcService;
-            Source = source;
-            Location = string.Empty;
-            _name = string.Empty;
-            _mediaInfo = mediaInfo;
-            _artists = Array.Empty<ArtistViewModel>();
-            _options = new List<string>();
-            Options = new ReadOnlyCollection<string>(_options);
-            Item = new Lazy<PlaybackItem?>(CreatePlaybackItem);
+            if (Source is Media mediaSource)
+            {
+                item = new PlaybackItem(mediaSource, mediaSource);
+            }
+            else
+            {
+                item = _playerService.CreatePlaybackItem(MediaPlayer, Source, _options.ToArray());
+            }
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Coding error. Rethrow.
+            throw;
+        }
+        catch (Exception e)
+        {
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.MediaLoadFailed, message: $"{Location}{Environment.NewLine}{e.Message}"));
         }
 
-        public MediaViewModel(LibVlcService libVlcService, StorageFile file)
-            : this(file, new MediaInfo(FilesHelpers.GetMediaTypeForFile(file)), libVlcService)
+        return item;
+    }
+
+    public override string ToString()
+    {
+        return $"{Name}; {Caption}";
+    }
+
+    public void SetOptions(string options)
+    {
+        string[] opts = options.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(o => o.StartsWith(":") && o.Length > 1).ToArray();
+
+        // Check if new options and existing options are the same
+        if (opts.Length == _options.Count)
         {
-            Location = file.Path;
-            _name = file.DisplayName;
-            _altCaption = file.Name;
+            bool same = !opts.Where((o, i) => o != _options[i]).Any();
+            if (same) return;
         }
 
-        public MediaViewModel(LibVlcService libVlcService, Uri uri)
-            : this(uri, new MediaInfo(MediaPlaybackType.Unknown), libVlcService)
+        _options.Clear();
+        _options.AddRange(opts);
+
+        if (!Item.IsValueCreated) return;
+        Clean();
+    }
+
+    public void Clean()
+    {
+        // If source is Media then there is no way to recreate. Don't clean up.
+        if (Source is Media || !Item.IsValueCreated) return;
+        PlaybackItem? item = Item.Value;
+        Item = new Lazy<PlaybackItem?>(CreatePlaybackItem);
+        if (item == null) return;
+        _playerService.DisposePlaybackItem(item);
+    }
+
+    public void UpdateSource(StorageFile file)
+    {
+        Source = file;
+        AltCaption = file.Name;
+    }
+
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    public async Task LoadDetailsAsync(IFilesService filesService)
+    {
+        DetailsLoaded = true;
+        switch (Source)
         {
-            Guard.IsTrue(uri.IsAbsoluteUri);
-            Location = uri.OriginalString;
-            _name = uri.Segments.Length > 0 ? Uri.UnescapeDataString(uri.Segments.Last()) : string.Empty;
+            case StorageFile file:
+                MediaInfo = await filesService.GetMediaInfoAsync(file);
+                break;
+            case Uri uri when await TryGetStorageFileFromUri(uri) is { } uriFile:
+                UpdateSource(uriFile);
+                MediaInfo = await filesService.GetMediaInfoAsync(uriFile);
+                break;
         }
 
-        public MediaViewModel(LibVlcService libVlcService, Media media)
-            : this(media, new MediaInfo(MediaPlaybackType.Unknown), libVlcService)
+        switch (MediaType)
         {
-            Location = media.Mrl;
-
-            // Media is already loaded, create PlaybackItem
-            Item = new Lazy<PlaybackItem?>(new PlaybackItem(media, media));
+            case MediaPlaybackType.Unknown when Item is { IsValueCreated: true, Value: { VideoTracks.Count: 0, Media.ParsedStatus: MediaParsedStatus.Done } }:
+                // Update media type when it was previously set Unknown. Usually when source is a URI.
+                // We don't want to init PlaybackItem just for this.
+                MediaInfo.MediaType = MediaPlaybackType.Music;
+                break;
+            case MediaPlaybackType.Music when !string.IsNullOrEmpty(MediaInfo.MusicProperties.Title):
+                Name = MediaInfo.MusicProperties.Title;
+                break;
+            case MediaPlaybackType.Video when !string.IsNullOrEmpty(MediaInfo.VideoProperties.Title):
+                Name = MediaInfo.VideoProperties.Title;
+                break;
         }
 
-        partial void OnMediaInfoChanged(MediaInfo value)
+        if (Item is { IsValueCreated: true, Value.Media: { IsParsed: true } media })
         {
-            UpdateCaptions();
+            if (Source is not IStorageItem &&
+                media.Meta(MetadataType.Title) is { } title &&
+                !string.IsNullOrEmpty(title) &&
+                !Guid.TryParse(title, out Guid _))
+            {
+                Name = title;
+            }
+
+            VideoInfo videoProperties = MediaInfo.VideoProperties;
+            videoProperties.ShowName = media.Meta(MetadataType.ShowName) ?? videoProperties.ShowName;
+            videoProperties.Season = media.Meta(MetadataType.Season) ?? videoProperties.Season;
+            videoProperties.Episode = media.Meta(MetadataType.Episode) ?? videoProperties.Episode;
         }
 
-        private PlaybackItem? CreatePlaybackItem()
+        if (Name == AltCaption)
+            AltCaption = string.Empty;
+    }
+
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    public async Task LoadThumbnailAsync()
+    {
+        if (Thumbnail != null) return;
+        if (Source is Uri uri && await TryGetStorageFileFromUri(uri) is { } storageFile)
         {
-            PlaybackItem? item = null;
+            UpdateSource(storageFile);
+        }
+
+        if (Source is StorageFile file)
+        {
+            using var source = await GetThumbnailSourceAsync(file);
+            if (source == null) return;
+            BitmapImage image = new()
+            {
+                DecodePixelType = DecodePixelType.Logical,
+                DecodePixelHeight = 300
+            };
+
             try
             {
-                if (Source is Media mediaSource)
-                {
-                    item = new PlaybackItem(mediaSource, mediaSource);
-                }
-                else
-                {
-                    Media media = _libVlcService.CreateMedia(Source, _options.ToArray());
-                    item = new PlaybackItem(Source, media);
-                }
+                await image.SetSourceAsync(source);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (Exception)
             {
-                // Coding error. Rethrow.
-                throw;
-            }
-            catch (Exception e)
-            {
-                Messenger.Send(new MediaLoadFailedNotificationMessage(e.Message, Location));
+                // WinRT component not found exception???
+                return;
             }
 
-            return item;
+            Thumbnail = image;
         }
-
-        public void SetOptions(string options)
+        else if (Item is { IsValueCreated: true, Value.Media: { } media } &&
+                 media.Meta(MetadataType.ArtworkURL) is { } artworkUrl &&
+                 Uri.TryCreate(artworkUrl, UriKind.Absolute, out Uri? artworkUri))
         {
-            string[] opts = options.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                .Where(o => o.StartsWith(":") && o.Length > 1).ToArray();
-
-            // Check if new options and existing options are the same
-            if (opts.Length == _options.Count)
+            Thumbnail = new BitmapImage(artworkUri)
             {
-                bool same = !opts.Where((o, i) => o != _options[i]).Any();
-                if (same) return;
-            }
-
-            _options.Clear();
-            _options.AddRange(opts);
-
-            if (!Item.IsValueCreated) return;
-            Clean();
+                DecodePixelType = DecodePixelType.Logical,
+                DecodePixelHeight = 300
+            };
         }
+    }
 
-        public void Clean()
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    public Task<IRandomAccessStream?> GetThumbnailSourceAsync()
+    {
+        return Source is not StorageFile file
+            ? Task.FromResult<IRandomAccessStream?>(null)
+            : GetThumbnailSourceAsync(file);
+    }
+
+    private static async Task<IRandomAccessStream?> GetThumbnailSourceAsync(StorageFile file)
+    {
+        if (!file.IsAvailable)
+            return null;
+
+        try
         {
-            // If source is Media then there is no way to recreate. Don't clean up.
-            if (Source is Media || !Item.IsValueCreated) return;
-            PlaybackItem? item = Item.Value;
-            Item = new Lazy<PlaybackItem?>(CreatePlaybackItem);
-            if (item == null) return;
-            LibVlcService.DisposeMedia(item.Media);
+            // Use SingleItem mode to retrieve embedded album art with original aspect ratio.
+            // https://learn.microsoft.com/windows/apps/develop/files/thumbnails
+            StorageItemThumbnail? source =
+                await file.GetThumbnailAsync(ThumbnailMode.SingleItem, requestedSize: 1280, ThumbnailOptions.UseCurrentScale);
+            if (source is { Type: ThumbnailType.Image })
+            {
+                return source;
+            }
         }
-
-        public void UpdateSource(StorageFile file)
+        catch (Exception)
         {
-            Source = file;
-            Name = file.DisplayName;
-            AltCaption = file.Name;
+            //// System.Exception: The data necessary to complete this operation is not yet available.
+            //if (e.HResult != unchecked((int)0x8000000A) &&
+            //    // System.Exception: The RPC server is unavailable.
+            //    e.HResult != unchecked((int)0x800706BA))
+            //    _logger.LogError(e, "Failed to load the image thumbnail.");
         }
 
-        public async Task LoadDetailsAsync(IFilesService filesService)
+        return null;
+    }
+
+    private void UpdateCaptions()
+    {
+        if (Duration > TimeSpan.Zero)
         {
-            switch (Source)
-            {
-                case StorageFile file:
-                    MediaInfo = await filesService.GetMediaInfoAsync(file);
-                    break;
-                case Uri { IsFile: true, IsLoopback: true, IsAbsoluteUri: true } uri:
-                    StorageFile uriFile;
-                    try
-                    {
-                        uriFile = await StorageFile.GetFileFromPathAsync(uri.OriginalString);
-                    }
-                    catch (IOException)
-                    {
-                        return;
-                    }
-
-                    UpdateSource(uriFile);
-                    MediaInfo = await filesService.GetMediaInfoAsync(uriFile);
-                    break;
-            }
-
-            switch (MediaType)
-            {
-                case MediaPlaybackType.Unknown when Item is { IsValueCreated: true, Value: { VideoTracks.Count: 0, Media.ParsedStatus: MediaParsedStatus.Done } }:
-                    // Update media type when it was previously set Unknown. Usually when source is a URI.
-                    // We don't want to init PlaybackItem just for this.
-                    MediaInfo.MediaType = MediaPlaybackType.Music;
-                    break;
-                case MediaPlaybackType.Music when !string.IsNullOrEmpty(MediaInfo.MusicProperties.Title):
-                    Name = MediaInfo.MusicProperties.Title;
-                    break;
-                case MediaPlaybackType.Video when !string.IsNullOrEmpty(MediaInfo.VideoProperties.Title):
-                    Name = MediaInfo.VideoProperties.Title;
-                    break;
-            }
-
-            if (Item is { IsValueCreated: true, Value.Media: { IsParsed: true } media })
-            {
-                if (Source is not IStorageItem &&
-                    media.Meta(MetadataType.Title) is { } title &&
-                    !Guid.TryParse(title, out Guid _))
-                {
-                    Name = title;
-                }
-
-                VideoInfo videoProperties = MediaInfo.VideoProperties;
-                videoProperties.ShowName = media.Meta(MetadataType.ShowName) ?? videoProperties.ShowName;
-                videoProperties.Season = media.Meta(MetadataType.Season) ?? videoProperties.Season;
-                videoProperties.Episode = media.Meta(MetadataType.Episode) ?? videoProperties.Episode;
-            }
+            Caption = Humanizer.ToDuration(Duration);
         }
 
-        public async Task LoadThumbnailAsync(IFilesService filesService)
+        MusicInfo musicProperties = MediaInfo.MusicProperties;
+        if (!string.IsNullOrEmpty(musicProperties.Artist))
         {
-            if (Thumbnail != null) return;
-            if (Source is Uri { IsFile: true, IsLoopback: true, IsAbsoluteUri: true } uri)
-            {
-                try
-                {
-                    StorageFile uriFile = await StorageFile.GetFileFromPathAsync(uri.OriginalString);
-                    UpdateSource(uriFile);
-                }
-                catch (IOException)
-                {
-                    return;
-                }
-            }
-
-            if (Source is StorageFile file)
-            {
-                StorageItemThumbnail? source = await filesService.GetThumbnailAsync(file);
-                if (source == null) return;
-                ThumbnailSource = source;
-                BitmapImage image = new();
-
-                try
-                {
-                    await image.SetSourceAsync(ThumbnailSource);
-                }
-                catch (Exception)
-                {
-                    // WinRT component not found exception???
-                    return;
-                }
-
-                Thumbnail = image;
-            }
-            else if (Item is { IsValueCreated: true, Value.Media: { } media } &&
-                     media.Meta(MetadataType.ArtworkURL) is { } artworkUrl &&
-                     Uri.TryCreate(artworkUrl, UriKind.Absolute, out Uri artworkUri))
-            {
-                Thumbnail = new BitmapImage(artworkUri);
-            }
+            Caption = musicProperties.Artist;
+            AltCaption = string.IsNullOrEmpty(musicProperties.Album)
+                ? musicProperties.Artist
+                : $"{musicProperties.Artist} – {musicProperties.Album}";
         }
-
-        public void UpdateAlbum(AlbumViewModelFactory factory)
+        else if (!string.IsNullOrEmpty(musicProperties.Album))
         {
-            if (!IsFromLibrary || MediaType != MediaPlaybackType.Music) return;
-            MusicInfo musicProperties = MediaInfo.MusicProperties;
-            if (Album != null)
-            {
-                if (factory.GetAlbumFromName(musicProperties.Album, musicProperties.AlbumArtist) == Album)
-                    return;
-
-                factory.Remove(this);
-            }
-
-            Album = factory.AddSongToAlbum(this, musicProperties.Album, musicProperties.AlbumArtist, musicProperties.Year);
+            AltCaption = musicProperties.Album;
         }
 
-        public void UpdateArtists(ArtistViewModelFactory factory)
+        if (Item is { IsValueCreated: true, Value.Media: { IsParsed: true } media })
         {
-            if (!IsFromLibrary || MediaType != MediaPlaybackType.Music) return;
-            if (Artists.Length > 0)
+            string artist = media.Meta(MetadataType.Artist) ?? string.Empty;
+            if (!string.IsNullOrEmpty(artist))
             {
-                ArtistViewModel[] artists = factory.ParseArtists(MediaInfo.MusicProperties.Artist);
-                if (artists.SequenceEqual(Artists)) return;
-                factory.Remove(this);
+                Caption = artist;
             }
 
-            Artists = factory.ParseAddArtists(MediaInfo.MusicProperties.Artist, this);
+            if (media.Meta(MetadataType.Album) is { } album && !string.IsNullOrEmpty(album))
+            {
+                AltCaption = string.IsNullOrEmpty(artist) ? album : $"{artist} – {album}";
+            }
         }
+    }
 
-        private void UpdateCaptions()
+    private static async Task<StorageFile?> TryGetStorageFileFromUri(Uri uri)
+    {
+        if (uri is { IsFile: true, IsLoopback: true, IsAbsoluteUri: true })
         {
-            if (Duration > TimeSpan.Zero)
-            {
-                Caption = Humanizer.ToDuration(Duration);
-            }
-
-            MusicInfo musicProperties = MediaInfo.MusicProperties;
-            if (!string.IsNullOrEmpty(musicProperties.Artist))
-            {
-                Caption = musicProperties.Artist;
-                AltCaption = string.IsNullOrEmpty(musicProperties.Album)
-                    ? musicProperties.Artist
-                    : $"{musicProperties.Artist} – {musicProperties.Album}";
-            }
-            else if (!string.IsNullOrEmpty(musicProperties.Album))
-            {
-                AltCaption = musicProperties.Album;
-            }
-
-            if (Item is { IsValueCreated: true, Value.Media: { IsParsed: true } media })
-            {
-                string artist = media.Meta(MetadataType.Artist) ?? string.Empty;
-                if (!string.IsNullOrEmpty(artist))
-                {
-                    Caption = artist;
-                }
-
-                if (media.Meta(MetadataType.Album) is { } album && !string.IsNullOrEmpty(album))
-                {
-                    AltCaption = string.IsNullOrEmpty(artist) ? album : $"{artist} – {album}";
-                }
-            }
+            return await FilesHelpers.TryGetFileFromPathAsync(uri.OriginalString);
         }
+
+        return null;
     }
 }

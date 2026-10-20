@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -137,14 +137,31 @@
     <comment>#Format[Double volume]</comment>
   </data>
   <data name="FailedToSaveFrameNotificationTitle" xml:space="preserve">
-    <value>فشل في حفظ الإطار</value>
+    <value>فشل حفظ الإطار</value>
+  </data>
+  <data name="TimeElapsed" xml:space="preserve">
+    <value>الوقت المنقضي</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>الوقت المتبقي</value>
+  </data>
+  <data name="TimeLength" xml:space="preserve">
+    <value>المدة الإجمالية</value>
+  </data>
+  <data name="ChapterPluralized_One" xml:space="preserve">
+    <value>Chapter</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="ChapterPluralized_Other" xml:space="preserve">
+    <value>Chapters</value>
+    <comment>#Format[Plural Int]</comment>
   </data>
   <data name="ChapterName" xml:space="preserve">
     <value>الفصل {0}</value>
     <comment>#Format[Int32 chapter]</comment>
   </data>
   <data name="FailedToLoadSubtitleNotificationTitle" xml:space="preserve">
-    <value>فشل في تحميل الترجمة</value>
+    <value>أخفق تحميل التَّرْجَمَة</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>عودة</value>
@@ -159,16 +176,19 @@
     <value>ملء الشاشة</value>
   </data>
   <data name="AudioAndCaption" xml:space="preserve">
-    <value>الصوت و التسميات التوضيحية</value>
+    <value>الصوت والترجمة</value>
   </data>
   <data name="FullscreenToggle_Variant1" xml:space="preserve">
-    <value>الخروج من ملء الشاشة</value>
+    <value>الخروج من وضع ملء الشاشة</value>
   </data>
   <data name="Volume" xml:space="preserve">
     <value>مستوى الصوت</value>
   </data>
+  <data name="VolumeSliderTooltip" xml:space="preserve">
+    <value>ضبط مستوى الصوت</value>
+  </data>
   <data name="Seek" xml:space="preserve">
-    <value>سحب</value>
+    <value>تمرير</value>
   </data>
   <data name="CompactOverlayToggle_Variant1" xml:space="preserve">
     <value>الخروج من وضع صورة في صورة</value>
@@ -183,13 +203,13 @@
     <value>تشغيل</value>
   </data>
   <data name="Pause" xml:space="preserve">
-    <value>ايقاف مؤقت</value>
+    <value>إيقاف مؤقت</value>
   </data>
   <data name="More" xml:space="preserve">
     <value>المزيد</value>
   </data>
   <data name="PlayQueue" xml:space="preserve">
-    <value>قائمة انتظار التشغيل</value>
+    <value>تشغيل قائمة الانتظار</value>
   </data>
   <data name="RepeatMode_Variant0" xml:space="preserve">
     <value>التكرار: إيقاف</value>
@@ -201,7 +221,7 @@
     <value>التكرار: مرة واحدة</value>
   </data>
   <data name="ItemsSelected_One" xml:space="preserve">
-    <value>تم تحديد {0} عناصر</value>
+    <value>تم تحديد {0} عنصر</value>
     <comment>#Format[Plural Int]</comment>
   </data>
   <data name="ItemsSelected_Other" xml:space="preserve">
@@ -211,20 +231,35 @@
   <data name="AddToQueue" xml:space="preserve">
     <value>إضافة إلى قائمة الانتظار</value>
   </data>
+  <data name="Select" xml:space="preserve">
+    <value>اختر</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>تحديد الكل</value>
+  </data>
+  <data name="SelectAllToolTip" xml:space="preserve">
+    <value>تحديد جميع العناصر في هذا العرض</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>عدم التحديد</value>
+  </data>
+  <data name="SelectNoneToolTip" xml:space="preserve">
+    <value>مسح التحديد الخاص بك</value>
+  </data>
   <data name="ClearSelection" xml:space="preserve">
     <value>مسح التحديد</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>ازالة</value>
+    <value>إزالة</value>
   </data>
   <data name="PlayNext" xml:space="preserve">
     <value>تشغيل التالي</value>
   </data>
   <data name="MoveUp" xml:space="preserve">
-    <value>اذهب للأعلى</value>
+    <value>إلى الأعلى</value>
   </data>
   <data name="MoveDown" xml:space="preserve">
-    <value>اذهب للأسفل</value>
+    <value>إلى الأسفل</value>
   </data>
   <data name="IsPlaying" xml:space="preserve">
     <value>يتم تشغيله حالياً</value>
@@ -249,6 +284,9 @@
   </data>
   <data name="RestoreView" xml:space="preserve">
     <value>استعادة عرض الفيديو</value>
+  </data>
+  <data name="MinimizeImmersiveView" xml:space="preserve">
+    <value>تصغير العرض الغامر</value>
   </data>
   <data name="Cast" xml:space="preserve">
     <value>بث</value>
@@ -304,6 +342,9 @@
   <data name="SearchBoxPlaceholderText" xml:space="preserve">
     <value>بحث</value>
   </data>
+  <data name="SearchBoxToolTip" xml:space="preserve">
+    <value>ابحث عن مقاطع الفيديو والأغاني والألبومات والمزيد</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>الإعدادات</value>
   </data>
@@ -321,6 +362,12 @@
   </data>
   <data name="OpenFileLocation" xml:space="preserve">
     <value>فتح موقع الملف</value>
+  </data>
+  <data name="OpenInFileExplorer" xml:space="preserve">
+    <value>Open in File Explorer</value>
+  </data>
+  <data name="OpenWith" xml:space="preserve">
+    <value>افتح ب‍استخدام</value>
   </data>
   <data name="PropertyAlbum" xml:space="preserve">
     <value>ألبوم</value>
@@ -386,7 +433,7 @@
     <value>لا يوجد جهاز متاح على الشبكة</value>
   </data>
   <data name="NoNetworkDrivePanelSubtext" xml:space="preserve">
-    <value>تعذر العثور على الوسائط الخاصة بك؟ تأكد من اقتران جهاز الشبكة الخاص بك في إعدادات Windows.</value>
+    <value>لم تتمكن من العثور على الوسائط الخاصة بك؟ تأكد من اقتران جهاز الشبكة الخاص بك في إعدادات Windows.</value>
   </data>
   <data name="Recent" xml:space="preserve">
     <value>الأخيرة</value>
@@ -424,17 +471,26 @@
   <data name="Artists" xml:space="preserve">
     <value>الفنانون</value>
   </data>
+  <data name="Song" xml:space="preserve">
+    <value>الأغنية</value>
+  </data>
   <data name="Songs" xml:space="preserve">
     <value>الأغاني</value>
   </data>
   <data name="OpenFilesToolTip" xml:space="preserve">
     <value>تصفح ملفات لتشغيلها</value>
   </data>
+  <data name="OpenFilesSecondaryToolTip" xml:space="preserve">
+    <value>المزيد من الخيارات لفتح الوسائط</value>
+  </data>
   <data name="AddFiles" xml:space="preserve">
     <value>اضف ملفات</value>
   </data>
   <data name="AddFilesToPlayQueueToolTip" xml:space="preserve">
     <value>تصفح الملفات للإضافة إلى قائمة انتظار التشغيل</value>
+  </data>
+  <data name="AddFilesToPlayQueueSecondaryToolTip" xml:space="preserve">
+    <value>المزيد من الخيارات لإضافة الوسائط إلى قائمة انتظار التشغيل</value>
   </data>
   <data name="AddMusicFolderToolTip" xml:space="preserve">
     <value>إضافة مجلد إلى مكتبة الموسيقى الخاصة بك</value>
@@ -585,6 +641,9 @@
   <data name="SettingsShowRecentHeader" xml:space="preserve">
     <value>إظهار الأخيرة</value>
   </data>
+  <data name="SettingsShowControlsHeader" xml:space="preserve">
+    <value>عرض عناصر التحكم عند الإيقاف</value>
+  </data>
   <data name="SettingsVideoLibraryLocationsHeader" xml:space="preserve">
     <value>مواقع مكتبة الفيديو</value>
   </data>
@@ -609,6 +668,18 @@
   <data name="SettingsVolumeBoostDescription" xml:space="preserve">
     <value>السماح بالحد الأقصى للصوت أن يتجاوز 100%</value>
   </data>
+  <data name="SettingsRewindDescription" xml:space="preserve">
+    <value>مقدار الوقت الذي يتم تخطيه للوراء عند الإرجاع</value>
+  </data>
+  <data name="SettingsFastForwardDescription" xml:space="preserve">
+    <value>مقدار الوقت الذي يتم تخطيه للأمام عند التقديم السريع</value>
+  </data>
+  <data name="SettingsOnScreenControlsHeader" xml:space="preserve">
+    <value>عناصر التحكم على الشاشة</value>
+  </data>
+  <data name="SettingsOnScreenControlsDescription" xml:space="preserve">
+    <value>اختر العناصر التي يمكن أن تظهر في عناصر التحكم، و ضبط سلوك الإخفاء التلقائي</value>
+  </data>
   <data name="SettingsGesturesHeader" xml:space="preserve">
     <value>إيماءات</value>
   </data>
@@ -617,9 +688,6 @@
   </data>
   <data name="SettingsGestureVolume" xml:space="preserve">
     <value>اسحب عمودياً لضبط مستوى الصوت</value>
-  </data>
-  <data name="SettingsGestureTap" xml:space="preserve">
-    <value>انقر في أي مكان للتشغيل أو الإيقاف المؤقت</value>
   </data>
   <data name="AppFriendlyName" xml:space="preserve">
     <value>مشغل وسائط Screenbox</value>
@@ -649,11 +717,26 @@
   <data name="SubtitleAddedNotificationTitle" xml:space="preserve">
     <value>تم اضافة الترجمة</value>
   </data>
+  <data name="PlaylistCreatedNotificationTitle" xml:space="preserve">
+    <value>قائمة التشغيل{0}" تم إنشاؤها</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistDeletedNotificationTitle" xml:space="preserve">
+    <value>قائمة التشغيل{0} تم حذفها</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistRenamedNotificationTitle" xml:space="preserve">
+    <value>تمت إعادة تسمية قائمة التشغيل إلى "{0}"</value>
+    <comment>#Format[String name]</comment>
+  </data>
   <data name="CriticalError" xml:space="preserve">
     <value>خطأ حرج</value>
   </data>
   <data name="CriticalErrorDirect3D11NotAvailable" xml:space="preserve">
     <value>لا يوجد عارض متوافق. الرجاء التأكد من توفر Direct3D 11 على جهازك.</value>
+  </data>
+  <data name="CriticalErrorMoreInformation" xml:space="preserve">
+    <value>للحصول على المزيد من المعلومات حول هذه المسألة والإصلاحات المحتملة، زر</value>
   </data>
   <data name="FailedToOpenFilesNotificationTitle" xml:space="preserve">
     <value>فشل في فتح الملفات</value>
@@ -689,6 +772,9 @@
   <data name="SettingsCategoryAdvanced" xml:space="preserve">
     <value>متقدم</value>
   </data>
+  <data name="SettingsCategoryPrivacy" xml:space="preserve">
+    <value>الخصوصيّة</value>
+  </data>
   <data name="SettingsAdvancedModeHeader" xml:space="preserve">
     <value>الوضع المتقدم</value>
   </data>
@@ -721,6 +807,9 @@
   </data>
   <data name="License" xml:space="preserve">
     <value>الترخيص</value>
+  </data>
+  <data name="ThirdPartyNotices" xml:space="preserve">
+    <value>إقرارات برامج الطرف الثالث</value>
   </data>
   <data name="HyperlinkTranslate" xml:space="preserve">
     <value>مساعدة في الترجمة</value>
@@ -776,4 +865,329 @@
   <data name="SettingsUseMultipleInstancesDescription" xml:space="preserve">
     <value>فتح ملفات الوسائط دائمًا في نوافذ جديدة</value>
   </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>ترتيب حسب</value>
+  </data>
+  <data name="SortByAutomationName" xml:space="preserve">
+    <value>الترتيب حسب {0} خيار محدد</value>
+    <comment>#Format[String sortBy]</comment>
+  </data>
+  <data name="Artist" xml:space="preserve">
+    <value>الفنان</value>
+  </data>
+  <data name="ReleasedYear" xml:space="preserve">
+    <value>سنة الاصدار</value>
+  </data>
+  <data name="SettingsAudioVisualHeader" xml:space="preserve">
+    <value>السمعي البصري</value>
+  </data>
+  <data name="GetLivelyApp" xml:space="preserve">
+    <value>احصل على خلفية حية</value>
+  </data>
+  <data name="GetLivelyVisuals" xml:space="preserve">
+    <value>تحميل المرئيات على GitHub</value>
+  </data>
+  <data name="VisualizerOptionsToolTip" xml:space="preserve">
+    <value>خيارات سمعية وبصرية</value>
+  </data>
+  <data name="Visuals" xml:space="preserve">
+    <value>مرئيات</value>
+  </data>
+  <data name="BrowseFiles" xml:space="preserve">
+    <value>تصفح الملف (الملفات)</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>افتراضي</value>
+  </data>
+  <data name="SettingsAudioVisualDescription" xml:space="preserve">
+    <value>اختر نمط صور لعرضها على تشغيل الصوت</value>
+  </data>
+  <data name="PoweredByLivelyWallpaper" xml:space="preserve">
+    <value>مدعوم من Lively Wallpaper</value>
+  </data>
+  <data name="SettingsImportVisualsHeader" xml:space="preserve">
+    <value>استيراد المرئيات</value>
+  </data>
+  <data name="SettingsImportVisualsDescription" xml:space="preserve">
+    <value>احصل على المزيد من العناصر المرئية عبر تطبيق Lively Wallpaper أو قم بتنزيلها من GitHub</value>
+  </data>
+  <data name="DateAdded" xml:space="preserve">
+    <value>تاريخ الاضافة</value>
+  </data>
+  <data name="Media" xml:space="preserve">
+    <value>الوسائط</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>فيديو</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>مِلَف</value>
+  </data>
+  <data name="MusicLibrary" xml:space="preserve">
+    <value>الموسيقى</value>
+  </data>
+  <data name="VideoLibrary" xml:space="preserve">
+    <value>مقاطع الفيديو</value>
+  </data>
+  <data name="ShowAlbum" xml:space="preserve">
+    <value>عرض الألبوم</value>
+  </data>
+  <data name="ShowArtist" xml:space="preserve">
+    <value>عرض الفنان</value>
+  </data>
+  <data name="FailedToLoadVisualNotificationTitle" xml:space="preserve">
+    <value>فشل تحميل الصورة</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderDescription" xml:space="preserve">
+    <value>عند فتح مِلَفّ واحد، أضف تلقائياً جميع الملفات الأخرى في المجلد إلى قائمة انتظار التشغيل</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderHeader" xml:space="preserve">
+    <value>إضافة جميع الملفات في المجلد إلى قائمة الانتظار</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>استخدام إعدادات النظام</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>داكن</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>فاتح</value>
+  </data>
+  <data name="SettingsThemeSelectionDescription" xml:space="preserve">
+    <value>تغيير نظام الألوان العام للتطبيق</value>
+  </data>
+  <data name="SettingsThemeSelectionHeader" xml:space="preserve">
+    <value>سمة التطبيق</value>
+  </data>
+  <data name="SettingsCategoryPersonalization" xml:space="preserve">
+    <value>التخصيص</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionHeader" xml:space="preserve">
+    <value>الاستئناف دائماً من آخر موضع</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionDescription" xml:space="preserve">
+    <value>متابعة التشغيل من حيث توقفت آخر مرة عند فتح مِلَفّ</value>
+  </data>
+  <data name="SettingsVideoUpscalingHeader" xml:space="preserve">
+    <value>طريقة رفع مستوى الفيديو</value>
+  </data>
+  <data name="SettingsVideoUpscalingDescription" xml:space="preserve">
+    <value>Super resolution upscaling requires compatible hardware and driver support.</value>
+  </data>
+  <data name="VideoUpscalingLinear" xml:space="preserve">
+    <value>ثنائي الخط</value>
+  </data>
+  <data name="VideoUpscalingPoint" xml:space="preserve">
+    <value>نقطة</value>
+  </data>
+  <data name="VideoUpscalingSuper" xml:space="preserve">
+    <value/>
+  </data>
+  <data name="SettingsShowChaptersHeader" xml:space="preserve">
+    <value>عرض اسم الفصل عندما يكون متاحًا</value>
+  </data>
+  <data name="SettingsOnScreenControlsHideDelayHeader" xml:space="preserve">
+    <value>إلغاء عناصر التحكم بعد مرور هذا الوقت</value>
+  </data>
+  <data name="SecondsCount_One" xml:space="preserve">
+    <value>{0} ثانية</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SecondsCount_Other" xml:space="preserve">
+    <value>{0} ثوان</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsLanguageSelectionHeader" xml:space="preserve">
+    <value>لغة التطبيق</value>
+  </data>
+  <data name="SettingsLanguageSelectionDescription" xml:space="preserve">
+    <value>تغيير لغة عرض التطبيق</value>
+  </data>
+  <data name="LanguageSystemDefault" xml:space="preserve">
+    <value>استخدم لغة النظام</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>لا توجد نتائج لـ "{0}"</value>
+    <comment>#Format[String searchQuery]</comment>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>المجلّد</value>
+  </data>
+  <data name="SettingsGestureTapHeader" xml:space="preserve">
+    <value>زر Tap</value>
+  </data>
+  <data name="SettingsGestureSwipeUpHeader" xml:space="preserve">
+    <value>السحب للأعلى</value>
+  </data>
+  <data name="SettingsGestureSwipeDownHeader" xml:space="preserve">
+    <value>السحب للأسفل</value>
+  </data>
+  <data name="SettingsGestureSwipeLeftHeader" xml:space="preserve">
+    <value>السحب لليسار</value>
+  </data>
+  <data name="SettingsGestureSwipeRightHeader" xml:space="preserve">
+    <value>السحب لليمين</value>
+  </data>
+  <data name="SettingsGesturePressAndHoldHeader" xml:space="preserve">
+    <value>تفعيل الضغط المستمر لزيادة سرعة التشغيل</value>
+  </data>
+  <data name="PlaybackActionKindNone" xml:space="preserve">
+    <value>لا يوجد شيء</value>
+  </data>
+  <data name="PlayPause" xml:space="preserve">
+    <value>تشغيل/إيقاف مؤقت</value>
+  </data>
+  <data name="Rewind" xml:space="preserve">
+    <value>الرجوع للوراء</value>
+  </data>
+  <data name="FastForward" xml:space="preserve">
+    <value>تقدم سريع</value>
+  </data>
+  <data name="DecreaseVolume" xml:space="preserve">
+    <value>خفض مستوى الصوت</value>
+  </data>
+  <data name="IncreaseVolume" xml:space="preserve">
+    <value>زيادة مستوى الصوت</value>
+  </data>
+  <data name="DecreaseRate" xml:space="preserve">
+    <value>تقليل السرعة</value>
+  </data>
+  <data name="IncreaseRate" xml:space="preserve">
+    <value>زيادة السرعة</value>
+  </data>
+  <data name="NextTrack" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="PreviousTrack" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="NextChapter" xml:space="preserve">
+    <value>Next chapter</value>
+  </data>
+  <data name="PreviousChapter" xml:space="preserve">
+    <value>Previous chapter</value>
+  </data>
+  <data name="AddToPlaylist" xml:space="preserve">
+    <value>إضافة إلى قائمة التشغيل</value>
+  </data>
+  <data name="CreateNewPlaylist" xml:space="preserve">
+    <value>إنشاء قائمة تشغيل جديدة</value>
+  </data>
+  <data name="NewPlaylist" xml:space="preserve">
+    <value>قائمة تشغيل جديدة</value>
+  </data>
+  <data name="ImportPlaylist" xml:space="preserve">
+    <value>استيراد قائمة التشغيل</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="SelectedItem" xml:space="preserve">
+    <value>العنصر المحدد</value>
+  </data>
+  <data name="SelectedItems" xml:space="preserve">
+    <value>العناصر المحددة</value>
+  </data>
+  <data name="NoPlaylists" xml:space="preserve">
+    <value>لا توجد قوائم تشغيل</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>إنشاء</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="NewPlaylistDefaultName" xml:space="preserve">
+    <value>قائمة تشغيل بدون عنوان</value>
+  </data>
+  <data name="CreatePlaylistPlaceholder" xml:space="preserve">
+    <value>أدخل اسماً لقائمة التشغيل هذه</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>قوائم التشغيل</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>إحذف</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>إعادة تسمية</value>
+  </data>
+  <data name="RenamePlaylistPlaceholder" xml:space="preserve">
+    <value>أدخل اسماً جديد لقائمة التشغيل هذه</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>إعادة تسمية قائمة التشغيل</value>
+  </data>
+  <data name="DeletePlaylist" xml:space="preserve">
+    <value>احذف قائمة التشغيل</value>
+  </data>
+  <data name="DeletePlaylistConfirmation" xml:space="preserve">
+    <value>هل أنت متأكد من أنك تريد حذف قائمة التشغيل{0}؟ لا يمكنك التراجع عن هذا الإجراء.</value>
+    <comment>#Format[String playlistName]</comment>
+  </data>
+  <data name="PlaylistsSelected_One" xml:space="preserve">
+    <value>{0} playlist selected</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="PlaylistsSelected_Other" xml:space="preserve">
+    <value>{0} playlists selected</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsSavePlaybackPositionHeader" xml:space="preserve">
+    <value>سجل موضع التشغيل</value>
+  </data>
+  <data name="SettingsSavePlaybackPositionDescription" xml:space="preserve">
+    <value>حفظ تاريخ موضع التشغيل على هذا الجهاز لتمكين الاستئناف السريع للجلسة</value>
+  </data>
+  <data name="SettingsClearPlaybackPositionHeader" xml:space="preserve">
+    <value>مسح سجل موضع التشغيل للجهاز</value>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_One" xml:space="preserve">
+    <value>إضافة عنصر {0} إلى قائمة التشغيل"{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_Other" xml:space="preserve">
+    <value>إضافة عناصر {0} إلى قائمة التشغيل"{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="NoPlaylistsPanelHeader" xml:space="preserve">
+    <value>ليس لديك أي قوائم تشغيل</value>
+  </data>
+  <data name="NoPlaylistsPanelSubtext" xml:space="preserve">
+    <value>قم بإنشاء قائمة التشغيل الأولى الخاصة بك لتنظيم الفيديوهات والموسيقى المفضلة لديك.</value>
+  </data>
+  <data name="NoPlaylistItems" xml:space="preserve">
+    <value>There are no items in this playlist.</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationHeader" xml:space="preserve">
+    <value>Frame captures will save to</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationDescription" xml:space="preserve">
+    <value>Frame captures location</value>
+  </data>
+  <data name="ChangeFolder" xml:space="preserve">
+    <value>Change folder</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="AspectRatioStatusMessage" xml:space="preserve">
+    <value>Aspect ratio: {0}</value>
+    <comment>#Format[String ratio]</comment>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Audio options</value>
+  </data>
+  <data name="SubtitleOptions" xml:space="preserve">
+    <value>Subtitle options</value>
+  </data>
+  <data name="DecreaseValue" xml:space="preserve">
+    <value>Decrease {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
+  <data name="IncreaseValue" xml:space="preserve">
+    <value>Increase {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
 </root>
+

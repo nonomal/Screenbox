@@ -1,0 +1,96 @@
+<ResourceDictionary
+    x:Class="Screenbox.Templates.GridViewItemTemplates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Screenbox.Controls"
+    xmlns:converters="using:Screenbox.Converters"
+    xmlns:core="using:Screenbox.Core"
+    xmlns:helpers="using:Screenbox.Helpers"
+    xmlns:local="using:Screenbox.Templates"
+    xmlns:strings="using:Screenbox.Strings"
+    xmlns:viewModels="using:Screenbox.Core.ViewModels">
+
+    <DataTemplate x:Key="AlbumGridViewItemTemplate" x:DataType="viewModels:AlbumViewModel">
+        <controls:CommonGridViewItem
+            Title="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(Name, strings:Resources.UnknownAlbum)}"
+            Width="{StaticResource CommonGridViewItemWidth}"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(Name, ArtistName)}"
+            Caption="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(ArtistName, strings:Resources.UnknownArtist)}"
+            IsPlaying="{x:Bind IsPlaying, Mode=OneWay}"
+            PlayCommand="{x:Bind PlayAlbumCommand}"
+            PlayCommandParameter="{x:Bind}"
+            ThumbnailHeight="{StaticResource CommonGridViewItemThumbnailHeight}"
+            ThumbnailSource="{x:Bind AlbumArt, Mode=OneWay}">
+            <controls:CommonGridViewItem.PlaceholderIconSource>
+                <FontIconSource FontSize="{StaticResource GridItemPlaceholderIconFontSize}" Glyph="&#xE93C;" />
+            </controls:CommonGridViewItem.PlaceholderIconSource>
+        </controls:CommonGridViewItem>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ArtistGridViewItemTemplate" x:DataType="viewModels:ArtistViewModel">
+        <controls:CommonGridViewItem
+            Title="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(Name, strings:Resources.UnknownArtist)}"
+            Width="{StaticResource CommonGridViewItemWidth}"
+            AutomationProperties.Name="{x:Bind Name}"
+            CornerRadius="{StaticResource CircularCornerRadius}"
+            HorizontalTextAlignment="Center"
+            IsPlaying="{x:Bind IsPlaying, Mode=OneWay}"
+            PlayCommand="{x:Bind PlayArtistCommand}"
+            PlayCommandParameter="{x:Bind}"
+            ThumbnailHeight="{StaticResource CommonGridViewItemThumbnailHeight}">
+            <controls:CommonGridViewItem.PlaceholderIconSource>
+                <FontIconSource FontSize="{StaticResource GridItemPlaceholderIconFontSize}" Glyph="&#xE77B;" />
+            </controls:CommonGridViewItem.PlaceholderIconSource>
+        </controls:CommonGridViewItem>
+    </DataTemplate>
+
+    <DataTemplate x:Key="MediaGridViewItemTemplate" x:DataType="viewModels:MediaViewModel">
+        <controls:CommonGridViewItem
+            Title="{x:Bind Name, Mode=OneWay}"
+            Width="{StaticResource CommonGridViewItemWidth}"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(Name, Caption)}"
+            Caption="{x:Bind Caption, Mode=OneWay}"
+            IsPlaying="{x:Bind IsPlaying, Mode=OneWay}"
+            PlayCommandParameter="{x:Bind}"
+            ThumbnailHeight="{StaticResource CommonGridViewItemThumbnailHeight}"
+            ThumbnailSource="{x:Bind Thumbnail, Mode=OneWay}">
+            <controls:CommonGridViewItem.PlaceholderIconSource>
+                <FontIconSource FontSize="{StaticResource GridItemPlaceholderIconFontSize}" Glyph="{x:Bind converters:GlyphConverter.ToMediaTypeGlyph(MediaInfo.MediaType)}" />
+            </controls:CommonGridViewItem.PlaceholderIconSource>
+        </controls:CommonGridViewItem>
+    </DataTemplate>
+
+    <DataTemplate x:Key="WideMediaGridViewItemTemplate" x:DataType="viewModels:MediaViewModel">
+        <controls:CommonGridViewItem
+            Title="{x:Bind Name}"
+            Width="{StaticResource WideGridViewItemWidth}"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(Name, Duration)}"
+            Caption="{x:Bind core:Humanizer.ToDuration(Duration)}"
+            IsPlaying="{x:Bind IsPlaying, Mode=OneWay}"
+            PlayCommandParameter="{x:Bind}"
+            ThumbnailHeight="{StaticResource WideGridViewItemThumbnailHeight}"
+            ThumbnailSource="{x:Bind Thumbnail, Mode=OneWay}">
+            <controls:CommonGridViewItem.PlaceholderIconSource>
+                <FontIconSource FontSize="{StaticResource WideGridItemPlaceholderIconFontSize}" Glyph="{x:Bind converters:GlyphConverter.ToMediaGlyph((viewModels:MediaViewModel))}" />
+            </controls:CommonGridViewItem.PlaceholderIconSource>
+        </controls:CommonGridViewItem>
+    </DataTemplate>
+
+    <DataTemplate x:Key="PlaylistGridViewItemTemplate" x:DataType="viewModels:PlaylistViewModel">
+        <controls:CommonGridViewItem
+            Title="{x:Bind Name, Mode=OneWay}"
+            Width="{StaticResource CommonGridViewItemWidth}"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(Name, ItemsCount)}"
+            Caption="{x:Bind strings:Resources.ItemsCount(ItemsCount), Mode=OneWay}"
+            IsPlaying="{x:Bind IsPlaying, Mode=OneWay}"
+            PlayCommandParameter="{x:Bind}"
+            ThumbnailHeight="{StaticResource CommonGridViewItemThumbnailHeight}">
+            <controls:CommonGridViewItem.PlaceholderIconSource>
+                <FontIconSource
+                    FontFamily="{StaticResource ScreenboxSymbolThemeFontFamily}"
+                    FontSize="{StaticResource GridItemPlaceholderIconFontSize}"
+                    Glyph="{StaticResource PlaylistGlyph}" />
+            </controls:CommonGridViewItem.PlaceholderIconSource>
+        </controls:CommonGridViewItem>
+    </DataTemplate>
+</ResourceDictionary>

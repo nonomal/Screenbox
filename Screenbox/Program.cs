@@ -1,9 +1,8 @@
-﻿#nullable enable
-
-using Screenbox;
-using Screenbox.Core.Helpers;
-using Screenbox.Core.Services;
 using System;
+using Screenbox;
+using Screenbox.Core.Contexts;
+using Screenbox.Core.Services;
+using Screenbox.Helpers;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 
@@ -25,12 +24,12 @@ public static class Program
         else
         {
             AppInstance instance;
-            var settingsService = new SettingsService();
+            var generalSettings = new GeneralSettingsContext(new SettingsStorage());
             var registeredInstances = AppInstance.GetInstances();
             IActivatedEventArgs? activatedArgs = AppInstance.GetActivatedEventArgs();    // This is null on Xbox
             bool isFileActivated = activatedArgs?.Kind == ActivationKind.File;
-            bool isFeatureEnabled = settingsService.UseMultipleInstances;
-            bool isXbox = SystemInformation.IsXbox;
+            bool isFeatureEnabled = generalSettings.UseMultipleInstances;
+            bool isXbox = DeviceInfoHelper.IsXbox;
             if ((!isXbox && isFeatureEnabled && isFileActivated) || registeredInstances.Count == 0)
             {
                 string key = Guid.NewGuid().ToString();
@@ -45,7 +44,12 @@ public static class Program
             {
                 // If we successfully registered this instance, we can now just
                 // go ahead and do normal XAML initialization.
-                Windows.UI.Xaml.Application.Start(p => new App());
+                Windows.UI.Xaml.Application.Start(p =>
+                {
+                    var context = new Windows.System.DispatcherQueueSynchronizationContext(Windows.System.DispatcherQueue.GetForCurrentThread());
+                    System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+                    new App();
+                });
             }
             else
             {

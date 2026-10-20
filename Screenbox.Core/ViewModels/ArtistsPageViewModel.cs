@@ -1,75 +1,100 @@
-﻿using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.WinUI;
-using Screenbox.Core.Helpers;
-using Screenbox.Core.Models;
-using Screenbox.Core.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using CommunityToolkit.WinUI;
+using Screenbox.Core.Contexts;
+using Screenbox.Core.Helpers;
+using Screenbox.Core.Models;
 using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class ArtistsPageViewModel : BaseMusicContentViewModel,
+    IRecipient<PropertyChangedMessage<MusicLibrary>>
 {
-    public sealed class ArtistsPageViewModel : ObservableRecipient
+    public ObservableCollection<ObservableArtistGroup> GroupedArtists { get; } = [];
+
+    [ObservableProperty]
+    public partial ArtistViewModel? ContextArtist { get; set; }
+
+    private readonly LibraryContext _libraryContext;
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly DispatcherQueueTimer _refreshTimer;
+
+    public ArtistsPageViewModel(LibraryContext libraryContext)
     {
-        public ObservableGroupedCollection<string, ArtistViewModel> GroupedArtists { get; }
+        _libraryContext = libraryContext;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _refreshTimer = _dispatcherQueue.CreateTimer();
+        PopulateGroups();
 
-        private readonly ILibraryService _libraryService;
-        private readonly DispatcherQueue _dispatcherQueue;
-        private readonly DispatcherQueueTimer _refreshTimer;
+        Messenger.Register<PropertyChangedMessage<MusicLibrary>>(this);
+    }
 
-        public ArtistsPageViewModel(ILibraryService libraryService)
+    public void Receive(PropertyChangedMessage<MusicLibrary> message)
+    {
+        _dispatcherQueue.TryEnqueue(FetchArtists);
+    }
+
+    public void OnNavigatedFrom()
+    {
+        _refreshTimer.Stop();
+    }
+
+    public void FetchArtists()
+    {
+        // No need to run fetch async. HomePageViewModel should already called the method.
+        Songs = _libraryContext.Music.Songs;
+
+        var groups = GetDefaultGrouping(_libraryContext);
+        GroupedArtists.SyncObservableGroups(groups, (key, items)
+                => items as ObservableArtistGroup ?? new ObservableArtistGroup(key, items));
+
+        // Progressively update when it's still loading
+        if (_libraryContext.IsLoadingMusic)
         {
-            _libraryService = libraryService;
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _refreshTimer = _dispatcherQueue.CreateTimer();
-            GroupedArtists = new ObservableGroupedCollection<string, ArtistViewModel>();
-            PopulateGroups();
-
-            libraryService.MusicLibraryContentChanged += OnMusicLibraryContentChanged;
+            _refreshTimer.Debounce(FetchArtists, TimeSpan.FromSeconds(5));
         }
-
-        public void OnNavigatedFrom()
+        else
         {
-            _libraryService.MusicLibraryContentChanged -= OnMusicLibraryContentChanged;
             _refreshTimer.Stop();
         }
+    }
 
-        public void FetchArtists()
+    private List<IGrouping<string, ArtistViewModel>> GetDefaultGrouping(LibraryContext context)
+    {
+        var groups = context.Music.Artists.Values
+            .OrderBy(a => a.Name, StringComparer.CurrentCulture)
+            .GroupBy(artist => artist == context.Music.UnknownArtist
+                ? MediaGroupingHelpers.OtherGroupSymbol
+                : MediaGroupingHelpers.GetCharacterGroupLabel(artist.Name))
+            .ToList();
+
+        var sortedGroup = new List<IGrouping<string, ArtistViewModel>>();
+        foreach (string groupHeader in MediaGroupingHelpers.CharacterGroupLabels)
         {
-            // No need to run fetch async. HomePageViewModel should already called the method.
-            MusicLibraryFetchResult musicLibrary = _libraryService.GetMusicFetchResult();
-
-            IEnumerable<IGrouping<string, ArtistViewModel>> groupings = musicLibrary.Artists
-                .OrderBy(a => a.Name, StringComparer.CurrentCulture)
-                .GroupBy(artist => artist == musicLibrary.UnknownArtist
-                    ? "\u2026"
-                    : MediaGroupingHelpers.GetFirstLetterGroup(artist.Name));
-            GroupedArtists.SyncObservableGroups(groupings);
-
-            // Progressively update when it's still loading
-            if (_libraryService.IsLoadingMusic)
+            if (groups.Find(g => g.Key == groupHeader) is { } group)
             {
-                _refreshTimer.Debounce(FetchArtists, TimeSpan.FromSeconds(5));
+                sortedGroup.Add(group);
             }
             else
             {
-                _refreshTimer.Stop();
+                sortedGroup.Add(new ListGrouping<string, ArtistViewModel>(groupHeader));
             }
         }
 
-        private void PopulateGroups()
-        {
-            foreach (string key in MediaGroupingHelpers.GroupHeaders.Select(letter => letter.ToString()))
-            {
-                GroupedArtists.AddGroup(key);
-            }
-        }
+        return sortedGroup;
+    }
 
-        private void OnMusicLibraryContentChanged(ILibraryService sender, object args)
+    private void PopulateGroups()
+    {
+        foreach (string key in MediaGroupingHelpers.CharacterGroupLabels)
         {
-            _dispatcherQueue.TryEnqueue(FetchArtists);
+            GroupedArtists.Add(new ObservableArtistGroup(key));
         }
     }
 }

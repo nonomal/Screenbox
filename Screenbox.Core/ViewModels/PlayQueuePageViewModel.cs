@@ -1,59 +1,51 @@
-﻿#nullable enable
-
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Screenbox.Core.Coordinators;
 using Screenbox.Core.Enums;
-using Screenbox.Core.Factories;
 using Screenbox.Core.Messages;
 using Screenbox.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Storage;
-using IResourceService = Screenbox.Core.Services.IResourceService;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class PlayQueuePageViewModel : ObservableRecipient
 {
-    public sealed partial class PlayQueuePageViewModel : ObservableRecipient
+    private readonly IFilesService _filesService;
+    private readonly IPlayQueueCoordinator _coordinator;
+
+    public PlayQueuePageViewModel(IFilesService filesService, IPlayQueueCoordinator coordinator)
     {
-        private readonly IFilesService _filesService;
-        private readonly IResourceService _resourceService;
-        private readonly MediaViewModelFactory _mediaFactory;
+        _filesService = filesService;
+        _coordinator = coordinator;
+    }
 
-        public PlayQueuePageViewModel(IFilesService filesService, IResourceService resourceService, MediaViewModelFactory mediaFactory)
+    [RelayCommand]
+    private void AddUrl(Uri? uri)
+    {
+        if (uri == null) return;
+        Messenger.Send(new PlayMediaMessage(uri));
+    }
+
+    /// <summary>
+    /// Opens a folder picker and queues all supported media files in the selected folder.
+    /// </summary>
+    [RelayCommand]
+    private async Task AddFolderAsync()
+    {
+        try
         {
-            _filesService = filesService;
-            _mediaFactory = mediaFactory;
-            _resourceService = resourceService;
+            StorageFolder? folder = await _filesService.PickFolderAsync();
+            if (folder == null) return;
+            IReadOnlyList<IStorageItem> items = await _filesService.GetSupportedItems(folder).GetItemsAsync();
+            await _coordinator.EnqueueAsync(items);
         }
-
-        [RelayCommand]
-        private void AddUrl(Uri? uri)
+        catch (Exception e)
         {
-            if (uri == null) return;
-            MediaViewModel media = _mediaFactory.GetTransient(uri);
-            Messenger.Send(new QueuePlaylistMessage(new[] { media }));
-        }
-
-        [RelayCommand]
-        private async Task AddFolderAsync()
-        {
-            try
-            {
-                StorageFolder? folder = await _filesService.PickFolderAsync();
-                if (folder == null) return;
-                IReadOnlyList<IStorageItem> items = await _filesService.GetSupportedItems(folder).GetItemsAsync();
-                MediaViewModel[] files = items.OfType<StorageFile>().Select(f => _mediaFactory.GetSingleton(f)).ToArray();
-                if (files.Length == 0) return;
-                Messenger.Send(new QueuePlaylistMessage(files));
-            }
-            catch (Exception e)
-            {
-                Messenger.Send(new ErrorMessage(
-                    _resourceService.GetString(ResourceName.FailedToOpenFilesNotificationTitle), e.Message));
-            }
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.FileOpenFailed, message: e.Message));
         }
     }
 }

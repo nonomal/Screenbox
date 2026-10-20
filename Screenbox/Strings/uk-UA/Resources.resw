@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -139,6 +139,23 @@
   <data name="FailedToSaveFrameNotificationTitle" xml:space="preserve">
     <value>Не вдалося зберегти кадр</value>
   </data>
+  <data name="TimeElapsed" xml:space="preserve">
+    <value>Пройшло часу</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Залишилося часу</value>
+  </data>
+  <data name="TimeLength" xml:space="preserve">
+    <value>Загальна тривалість</value>
+  </data>
+  <data name="ChapterPluralized_One" xml:space="preserve">
+    <value>Розділ</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="ChapterPluralized_Other" xml:space="preserve">
+    <value>Розділи</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
   <data name="ChapterName" xml:space="preserve">
     <value>Глава {0}</value>
     <comment>#Format[Int32 chapter]</comment>
@@ -167,6 +184,9 @@
   <data name="Volume" xml:space="preserve">
     <value>Гучність</value>
   </data>
+  <data name="VolumeSliderTooltip" xml:space="preserve">
+    <value>Регулювання гучності</value>
+  </data>
   <data name="Seek" xml:space="preserve">
     <value>Перехід</value>
   </data>
@@ -192,7 +212,7 @@
     <value>Черга відтворення</value>
   </data>
   <data name="RepeatMode_Variant0" xml:space="preserve">
-    <value>Повторення: вимк.</value>
+    <value>Повторення: вимкнено</value>
   </data>
   <data name="RepeatMode_Variant2" xml:space="preserve">
     <value>Повторення: всі файли</value>
@@ -210,6 +230,21 @@
   </data>
   <data name="AddToQueue" xml:space="preserve">
     <value>Додати у чергу</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Вибрати</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Обрати все</value>
+  </data>
+  <data name="SelectAllToolTip" xml:space="preserve">
+    <value>Обрати всі елементи цього перегляду</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Обрати нічого</value>
+  </data>
+  <data name="SelectNoneToolTip" xml:space="preserve">
+    <value>Очистити свій вибір</value>
   </data>
   <data name="ClearSelection" xml:space="preserve">
     <value>Скасувати вибір</value>
@@ -234,7 +269,7 @@
     <value>Відео</value>
   </data>
   <data name="EmptyFolder" xml:space="preserve">
-    <value>Ця папка порожня</value>
+    <value>Ця тека порожня</value>
   </data>
   <data name="ItemsCount_One" xml:space="preserve">
     <value>Елементів: {0}</value>
@@ -248,7 +283,10 @@
     <value>Порожньо</value>
   </data>
   <data name="RestoreView" xml:space="preserve">
-    <value>Відновити перегляд</value>
+    <value>Відновити перегляд із зануренням</value>
+  </data>
+  <data name="MinimizeImmersiveView" xml:space="preserve">
+    <value>Мінімізувати перегляд з ефектом занурення</value>
   </data>
   <data name="Cast" xml:space="preserve">
     <value>Транслювати</value>
@@ -281,7 +319,7 @@
     <value>Невідомий жанр</value>
   </data>
   <data name="AddFolder" xml:space="preserve">
-    <value>Додати папку</value>
+    <value>Додати теку</value>
   </data>
   <data name="Clear" xml:space="preserve">
     <value>Очистити</value>
@@ -304,6 +342,9 @@
   <data name="SearchBoxPlaceholderText" xml:space="preserve">
     <value>Пошук</value>
   </data>
+  <data name="SearchBoxToolTip" xml:space="preserve">
+    <value>Шукати відео, пісні, альбоми та багато іншого</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Налаштування</value>
   </data>
@@ -321,6 +362,12 @@
   </data>
   <data name="OpenFileLocation" xml:space="preserve">
     <value>Відкрити розташування файлу</value>
+  </data>
+  <data name="OpenInFileExplorer" xml:space="preserve">
+    <value>Відкрити у Провіднику</value>
+  </data>
+  <data name="OpenWith" xml:space="preserve">
+    <value>Відкрити за допомогою</value>
   </data>
   <data name="PropertyAlbum" xml:space="preserve">
     <value>Альбом</value>
@@ -395,7 +442,7 @@
     <value>Налаштування відео</value>
   </data>
   <data name="Open" xml:space="preserve">
-    <value>Вiдкрити</value>
+    <value>Відкрити</value>
   </data>
   <data name="LocationSpecified_One" xml:space="preserve">
     <value>Вказано розташувань: {0}</value>
@@ -406,10 +453,10 @@
     <comment>#Format[Plural Int]</comment>
   </data>
   <data name="ShuffleMode_Variant0" xml:space="preserve">
-    <value>Перемішування: вимк.</value>
+    <value>Перемішування: вимк</value>
   </data>
   <data name="ShuffleMode_Variant1" xml:space="preserve">
-    <value>Перемішування: увімк.</value>
+    <value>Перемішування: увімк</value>
   </data>
   <data name="ResumePositionNotificationTitle" xml:space="preserve">
     <value>Відновлення місця, де ви зупинились</value>
@@ -424,29 +471,38 @@
   <data name="Artists" xml:space="preserve">
     <value>Виконавці</value>
   </data>
+  <data name="Song" xml:space="preserve">
+    <value>Пісня</value>
+  </data>
   <data name="Songs" xml:space="preserve">
     <value>Пісні</value>
   </data>
   <data name="OpenFilesToolTip" xml:space="preserve">
     <value>Пошук файлів для відтворення</value>
   </data>
+  <data name="OpenFilesSecondaryToolTip" xml:space="preserve">
+    <value>Більше параметрів для відкриття медіа</value>
+  </data>
   <data name="AddFiles" xml:space="preserve">
     <value>Додати файл(и)</value>
   </data>
   <data name="AddFilesToPlayQueueToolTip" xml:space="preserve">
-    <value>Пошук файлів для додавання у чергу</value>
+    <value>Шукати файл(и) для додавання у чергу</value>
+  </data>
+  <data name="AddFilesToPlayQueueSecondaryToolTip" xml:space="preserve">
+    <value>Більше параметрів для додавання медіа в чергу відтворення</value>
   </data>
   <data name="AddMusicFolderToolTip" xml:space="preserve">
-    <value>Додати папку до бібліотеки музики</value>
+    <value>Додати теку до бібліотеки музики</value>
   </data>
   <data name="AddUrl" xml:space="preserve">
     <value>Додати медіа за посиланням</value>
   </data>
   <data name="AddVideoFolderToolTip" xml:space="preserve">
-    <value>Додати папку до бібліотеки відео</value>
+    <value>Додати теку до бібліотеки відео</value>
   </data>
   <data name="OpenFolder" xml:space="preserve">
-    <value>Відкрити папку</value>
+    <value>Відкрити теку</value>
   </data>
   <data name="OpenUrl" xml:space="preserve">
     <value>Відкрити посилання</value>
@@ -478,7 +534,7 @@
     <value>Усі відео</value>
   </data>
   <data name="VideoFolders" xml:space="preserve">
-    <value>Папки з відео</value>
+    <value>Теки з відео</value>
   </data>
   <data name="SearchResultHeader" xml:space="preserve">
     <value>Результати пошуку за запитом «{0}»</value>
@@ -585,6 +641,9 @@
   <data name="SettingsShowRecentHeader" xml:space="preserve">
     <value>Показувати останнє</value>
   </data>
+  <data name="SettingsShowControlsHeader" xml:space="preserve">
+    <value>Показувати елементи керування під час паузи</value>
+  </data>
   <data name="SettingsVideoLibraryLocationsHeader" xml:space="preserve">
     <value>Розташування бібліотеки відео</value>
   </data>
@@ -609,6 +668,18 @@
   <data name="SettingsVolumeBoostDescription" xml:space="preserve">
     <value>Дозволити максимальній гучності бути більшою за 100%</value>
   </data>
+  <data name="SettingsRewindDescription" xml:space="preserve">
+    <value>Час, на який відмотується відео при перемотуванні назад</value>
+  </data>
+  <data name="SettingsFastForwardDescription" xml:space="preserve">
+    <value>Час, на який відмотується відео при перемотуванні вперед</value>
+  </data>
+  <data name="SettingsOnScreenControlsHeader" xml:space="preserve">
+    <value>Керування на екрані</value>
+  </data>
+  <data name="SettingsOnScreenControlsDescription" xml:space="preserve">
+    <value>Виберіть, які елементи можуть показуватися в елементах керування, та налаштуйте поведінку автоприховування</value>
+  </data>
   <data name="SettingsGesturesHeader" xml:space="preserve">
     <value>Жести</value>
   </data>
@@ -617,9 +688,6 @@
   </data>
   <data name="SettingsGestureVolume" xml:space="preserve">
     <value>Вертикальне проведення для регулювання гучності</value>
-  </data>
-  <data name="SettingsGestureTap" xml:space="preserve">
-    <value>Натискання будь-де для відтворення чи зупинки</value>
   </data>
   <data name="AppFriendlyName" xml:space="preserve">
     <value>Медіапрогравач Screenbox</value>
@@ -649,11 +717,26 @@
   <data name="SubtitleAddedNotificationTitle" xml:space="preserve">
     <value>Субтитри додано</value>
   </data>
+  <data name="PlaylistCreatedNotificationTitle" xml:space="preserve">
+    <value>Список відтворення «{0}» створено</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistDeletedNotificationTitle" xml:space="preserve">
+    <value>Список відтворення «{0}» видалено</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistRenamedNotificationTitle" xml:space="preserve">
+    <value>Список відтворення перейменовано на «{0}»</value>
+    <comment>#Format[String name]</comment>
+  </data>
   <data name="CriticalError" xml:space="preserve">
     <value>Критична помилка</value>
   </data>
   <data name="CriticalErrorDirect3D11NotAvailable" xml:space="preserve">
     <value>Немає сумісного візуалізатора. Переконайтеся, що на вашому пристрої доступний Direct3D 11.</value>
+  </data>
+  <data name="CriticalErrorMoreInformation" xml:space="preserve">
+    <value>Для отримання додаткової інформації про цю проблему та можливі шляхи її вирішення відвідайте</value>
   </data>
   <data name="FailedToOpenFilesNotificationTitle" xml:space="preserve">
     <value>Не вдалося відкрити файл(и)</value>
@@ -683,26 +766,29 @@
     <value>«Допомога з командним рядком VLC»</value>
   </data>
   <data name="VlcCommandLineHelpText" xml:space="preserve">
-    <value>Відвідайте {0}, щоб дізнатися повний список доступних параметрів.</value>
+    <value>Перегляньте {0} для повного списку доступних варіантів.</value>
     <comment>{0} = VLC command-line help</comment>
   </data>
   <data name="SettingsCategoryAdvanced" xml:space="preserve">
     <value>Розширене</value>
   </data>
+  <data name="SettingsCategoryPrivacy" xml:space="preserve">
+    <value>Приватніть</value>
+  </data>
   <data name="SettingsAdvancedModeHeader" xml:space="preserve">
     <value>Розширений режим</value>
   </data>
   <data name="SettingsAdvancedModeDescription" xml:space="preserve">
-    <value>У розширеному режимі ви можете змінювати поведінку LibVLC за допомогою командного рядка.</value>
+    <value>У розширеному режимі ви можете змінювати поведінку LibVLC за допомогою командного рядка</value>
   </data>
   <data name="SettingsGlobalArgumentsHeader" xml:space="preserve">
     <value>Глобальні аргументи</value>
   </data>
   <data name="SettingsGlobalArgumentsDescription" xml:space="preserve">
-    <value>Аргументи командного рядка, які застосовуються до всіх відтворюваних медіа.</value>
+    <value>Аргументи командного рядка, які застосовуються до всіх відтворюваних медіа</value>
   </data>
   <data name="RemoveFolder" xml:space="preserve">
-    <value>Вилучити папку</value>
+    <value>Вилучити теку</value>
   </data>
   <data name="PendingChanges" xml:space="preserve">
     <value>Очікувані зміни</value>
@@ -722,6 +808,9 @@
   <data name="License" xml:space="preserve">
     <value>Ліцензія</value>
   </data>
+  <data name="ThirdPartyNotices" xml:space="preserve">
+    <value>Подяки за стороннє програмне забезпечення</value>
+  </data>
   <data name="HyperlinkTranslate" xml:space="preserve">
     <value>Допомогти з перекладом</value>
   </data>
@@ -735,7 +824,7 @@
     <value>Композитори</value>
   </data>
   <data name="FailedToAddFolderNotificationTitle" xml:space="preserve">
-    <value>Не вдалося додати папку</value>
+    <value>Не вдалося додати теку</value>
   </data>
   <data name="OpenAlbum" xml:space="preserve">
     <value>Відкрити альбом</value>
@@ -776,4 +865,329 @@
   <data name="SettingsUseMultipleInstancesDescription" xml:space="preserve">
     <value>Завжди відкривати медіафайли в новому вікні</value>
   </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Сортувати за</value>
+  </data>
+  <data name="SortByAutomationName" xml:space="preserve">
+    <value>Сортувати за {0}</value>
+    <comment>#Format[String sortBy]</comment>
+  </data>
+  <data name="Artist" xml:space="preserve">
+    <value>Виконавець</value>
+  </data>
+  <data name="ReleasedYear" xml:space="preserve">
+    <value>Рік випуску</value>
+  </data>
+  <data name="SettingsAudioVisualHeader" xml:space="preserve">
+    <value>Візуалізація аудіо</value>
+  </data>
+  <data name="GetLivelyApp" xml:space="preserve">
+    <value>Отримати Lively Wallpaper</value>
+  </data>
+  <data name="GetLivelyVisuals" xml:space="preserve">
+    <value>Завантажити візуалізації з GitHub</value>
+  </data>
+  <data name="VisualizerOptionsToolTip" xml:space="preserve">
+    <value>Параметри візуалізації аудіо</value>
+  </data>
+  <data name="Visuals" xml:space="preserve">
+    <value>Візуалізація</value>
+  </data>
+  <data name="BrowseFiles" xml:space="preserve">
+    <value>Переглянути файли</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Стандартна</value>
+  </data>
+  <data name="SettingsAudioVisualDescription" xml:space="preserve">
+    <value>Оберіть тло, яке буде показуватися під час відтворення аудіо для повного занурення</value>
+  </data>
+  <data name="PoweredByLivelyWallpaper" xml:space="preserve">
+    <value>На основі Lively Wallpaper</value>
+  </data>
+  <data name="SettingsImportVisualsHeader" xml:space="preserve">
+    <value>Імпорт візуалізацій</value>
+  </data>
+  <data name="SettingsImportVisualsDescription" xml:space="preserve">
+    <value>Отримайте більше візуалізацій за допомогою застосунку Lively Wallpaper або завантажте їх на GitHub</value>
+  </data>
+  <data name="DateAdded" xml:space="preserve">
+    <value>Дата додавання</value>
+  </data>
+  <data name="Media" xml:space="preserve">
+    <value>Медіа</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>Відео</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="MusicLibrary" xml:space="preserve">
+    <value>Музика</value>
+  </data>
+  <data name="VideoLibrary" xml:space="preserve">
+    <value>Відео</value>
+  </data>
+  <data name="ShowAlbum" xml:space="preserve">
+    <value>Показати альбом</value>
+  </data>
+  <data name="ShowArtist" xml:space="preserve">
+    <value>Показати виконавця</value>
+  </data>
+  <data name="FailedToLoadVisualNotificationTitle" xml:space="preserve">
+    <value>Збій завантаження графіки повідомлення</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderDescription" xml:space="preserve">
+    <value>При відкритті одного файлу, автоматично додавати усі інші файли у теці до черги.</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderHeader" xml:space="preserve">
+    <value>Додати усі файли в теці до черги</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Використовувати системні налаштування</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Темна</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Світла</value>
+  </data>
+  <data name="SettingsThemeSelectionDescription" xml:space="preserve">
+    <value>Змінити загальну колірну схему програми</value>
+  </data>
+  <data name="SettingsThemeSelectionHeader" xml:space="preserve">
+    <value>Тема програми</value>
+  </data>
+  <data name="SettingsCategoryPersonalization" xml:space="preserve">
+    <value>Персоналізація</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionHeader" xml:space="preserve">
+    <value>Завжди продовжувати з останнього місця</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionDescription" xml:space="preserve">
+    <value>Продовжувати відтворення з того місця, де ви востаннє зупинилися під час відкриття файлу</value>
+  </data>
+  <data name="SettingsVideoUpscalingHeader" xml:space="preserve">
+    <value>Спосіб масштабування відео</value>
+  </data>
+  <data name="SettingsVideoUpscalingDescription" xml:space="preserve">
+    <value>Super resolution upscaling requires compatible hardware and driver support.</value>
+  </data>
+  <data name="VideoUpscalingLinear" xml:space="preserve">
+    <value>Білінійне</value>
+  </data>
+  <data name="VideoUpscalingPoint" xml:space="preserve">
+    <value>Точка</value>
+  </data>
+  <data name="VideoUpscalingSuper" xml:space="preserve">
+    <value>Суперроздільність</value>
+  </data>
+  <data name="SettingsShowChaptersHeader" xml:space="preserve">
+    <value>Показувати назву розділу, якщо він доступний</value>
+  </data>
+  <data name="SettingsOnScreenControlsHideDelayHeader" xml:space="preserve">
+    <value>Сховати елементи керування через заданий час</value>
+  </data>
+  <data name="SecondsCount_One" xml:space="preserve">
+    <value>{0} секунда</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SecondsCount_Other" xml:space="preserve">
+    <value>{0} секунд</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsLanguageSelectionHeader" xml:space="preserve">
+    <value>Мова застосунку</value>
+  </data>
+  <data name="SettingsLanguageSelectionDescription" xml:space="preserve">
+    <value>Змінити мову в застосунку</value>
+  </data>
+  <data name="LanguageSystemDefault" xml:space="preserve">
+    <value>Використовувати мову системи</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>Немає результатів для «{0}»</value>
+    <comment>#Format[String searchQuery]</comment>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Тека</value>
+  </data>
+  <data name="SettingsGestureTapHeader" xml:space="preserve">
+    <value>Натиснути</value>
+  </data>
+  <data name="SettingsGestureSwipeUpHeader" xml:space="preserve">
+    <value>Провести вгору</value>
+  </data>
+  <data name="SettingsGestureSwipeDownHeader" xml:space="preserve">
+    <value>Провести вниз</value>
+  </data>
+  <data name="SettingsGestureSwipeLeftHeader" xml:space="preserve">
+    <value>Провести вліво</value>
+  </data>
+  <data name="SettingsGestureSwipeRightHeader" xml:space="preserve">
+    <value>Провести вправо</value>
+  </data>
+  <data name="SettingsGesturePressAndHoldHeader" xml:space="preserve">
+    <value>Натисніть і утримуйте, щоб збільшити швидкість відтворення</value>
+  </data>
+  <data name="PlaybackActionKindNone" xml:space="preserve">
+    <value>Немає</value>
+  </data>
+  <data name="PlayPause" xml:space="preserve">
+    <value>Відтворити/Пауза</value>
+  </data>
+  <data name="Rewind" xml:space="preserve">
+    <value>Перемотати</value>
+  </data>
+  <data name="FastForward" xml:space="preserve">
+    <value>Перемотати вперед</value>
+  </data>
+  <data name="DecreaseVolume" xml:space="preserve">
+    <value>Зменшити гучність</value>
+  </data>
+  <data name="IncreaseVolume" xml:space="preserve">
+    <value>Збільшити гучність</value>
+  </data>
+  <data name="DecreaseRate" xml:space="preserve">
+    <value>Зменшити швидкість</value>
+  </data>
+  <data name="IncreaseRate" xml:space="preserve">
+    <value>Збільшити швидкість</value>
+  </data>
+  <data name="NextTrack" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="PreviousTrack" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="NextChapter" xml:space="preserve">
+    <value>Next chapter</value>
+  </data>
+  <data name="PreviousChapter" xml:space="preserve">
+    <value>Previous chapter</value>
+  </data>
+  <data name="AddToPlaylist" xml:space="preserve">
+    <value>Додати до списку відтворення</value>
+  </data>
+  <data name="CreateNewPlaylist" xml:space="preserve">
+    <value>Створити новий список відтворення</value>
+  </data>
+  <data name="NewPlaylist" xml:space="preserve">
+    <value>Новий список відтворення</value>
+  </data>
+  <data name="ImportPlaylist" xml:space="preserve">
+    <value>Імпортувати список відтворення</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Експортувати</value>
+  </data>
+  <data name="SelectedItem" xml:space="preserve">
+    <value>Вибраний елемент</value>
+  </data>
+  <data name="SelectedItems" xml:space="preserve">
+    <value>Вибрані елементи</value>
+  </data>
+  <data name="NoPlaylists" xml:space="preserve">
+    <value>Немає списків відтворення</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Створити</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="NewPlaylistDefaultName" xml:space="preserve">
+    <value>Список відтворення без назви</value>
+  </data>
+  <data name="CreatePlaylistPlaceholder" xml:space="preserve">
+    <value>Введіть назву цього списку відтворення</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>Списки відтворення</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Видалити</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Перейменувати</value>
+  </data>
+  <data name="RenamePlaylistPlaceholder" xml:space="preserve">
+    <value>Введіть назву для цього списку відтворення</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>Перейменувати список відтворення</value>
+  </data>
+  <data name="DeletePlaylist" xml:space="preserve">
+    <value>Видалити список відтворення</value>
+  </data>
+  <data name="DeletePlaylistConfirmation" xml:space="preserve">
+    <value>Упевнені, що хочете видалити список відтворення «{0}»? Цю дію не можна скасувати.</value>
+    <comment>#Format[String playlistName]</comment>
+  </data>
+  <data name="PlaylistsSelected_One" xml:space="preserve">
+    <value>Вибрано {0} список відтворення</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="PlaylistsSelected_Other" xml:space="preserve">
+    <value>Вибрано {0} списків відтворення</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsSavePlaybackPositionHeader" xml:space="preserve">
+    <value>Історія позицій відтворення</value>
+  </data>
+  <data name="SettingsSavePlaybackPositionDescription" xml:space="preserve">
+    <value>Зберегти історію відтворення на цьому пристрої, щоби продовжити з того місця, де ви зупинилися</value>
+  </data>
+  <data name="SettingsClearPlaybackPositionHeader" xml:space="preserve">
+    <value>Очистити історію позицій відтворення пристрою</value>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_One" xml:space="preserve">
+    <value>Додано {0} елемент до списку відтворення «{1}»</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_Other" xml:space="preserve">
+    <value>Додано {0} елементів до списку відтворення «{1}»</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="NoPlaylistsPanelHeader" xml:space="preserve">
+    <value>У вас немає жодного списку відтворення</value>
+  </data>
+  <data name="NoPlaylistsPanelSubtext" xml:space="preserve">
+    <value>Створіть свій перший список відтворення, щоб упорядкувати улюблені відео та музику.</value>
+  </data>
+  <data name="NoPlaylistItems" xml:space="preserve">
+    <value>У цьому списку відтворення немає жодного елемента.</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationHeader" xml:space="preserve">
+    <value>Знімки кадрів будуть збережені до</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationDescription" xml:space="preserve">
+    <value>Місце зберігання кадрів</value>
+  </data>
+  <data name="ChangeFolder" xml:space="preserve">
+    <value>Змінити теку</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Змінити</value>
+  </data>
+  <data name="AspectRatioStatusMessage" xml:space="preserve">
+    <value>Співвідношення сторін: {0}</value>
+    <comment>#Format[String ratio]</comment>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Audio options</value>
+  </data>
+  <data name="SubtitleOptions" xml:space="preserve">
+    <value>Subtitle options</value>
+  </data>
+  <data name="DecreaseValue" xml:space="preserve">
+    <value>Decrease {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
+  <data name="IncreaseValue" xml:space="preserve">
+    <value>Increase {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
 </root>
+

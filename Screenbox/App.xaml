@@ -1,20 +1,19 @@
-﻿<Application
+<Application
     x:Class="Screenbox.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:commands="using:Screenbox.Commands"
-    xmlns:contract13NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,13)"
-    xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)"
     xmlns:converters="using:Screenbox.Converters"
+    xmlns:ctAnimations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:ctConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:strings="using:Screenbox.Strings"
-    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters">
+    xmlns:sbuc="using:Screenbox.UI.Controls"
+    xmlns:strings="using:Screenbox.Strings">
 
     <Application.Resources>
         <muxc:XamlControlsResources>
             <muxc:XamlControlsResources.MergedDictionaries>
                 <ResourceDictionary>
-
                     <!--  Brushes  -->
                     <ResourceDictionary.ThemeDictionaries>
                         <ResourceDictionary x:Key="Default">
@@ -29,47 +28,27 @@
                     </ResourceDictionary.ThemeDictionaries>
 
                     <!--  Commands  -->
+                    <commands:SelectDeselectAllCommand x:Key="SelectDeselectAllCommand" />
                     <commands:ShowPropertiesCommand x:Key="ShowPropertiesCommand" />
+                    <commands:OpenInFileExplorerCommand x:Key="OpenInFileExplorerCommand" />
+                    <commands:OpenWithCommand x:Key="OpenWithCommand" />
 
                     <!--  Converters  -->
                     <converters:FirstOrDefaultConverter x:Key="FirstOrDefaultConverter" />
                     <converters:HumanizedDurationConverter x:Key="HumanizedDurationConverter" />
-                    <converters:MediaGlyphConverter x:Key="MediaGlyphConverter" />
-                    <converters:PlayPauseGlyphConverter x:Key="PlayPauseGlyphConverter" />
-                    <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter" />
-                    <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-                    <toolkitConverters:BoolToObjectConverter
-                        x:Key="InverseBoolToVisibilityConverter"
-                        FalseValue="Visible"
-                        TrueValue="Collapsed" />
-                    <toolkitConverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
-                    <toolkitConverters:EmptyObjectToObjectConverter
-                        x:Key="InverseEmptyObjectToVisibilityConverter"
-                        EmptyValue="Visible"
-                        NotEmptyValue="Collapsed" />
-                    <toolkitConverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
-                    <toolkitConverters:DoubleToObjectConverter
-                        x:Key="DoubleToBoolConverter"
-                        FalseValue="False"
-                        GreaterThan="0"
-                        NullValue="False"
-                        TrueValue="True" />
-                    <toolkitConverters:BoolToObjectConverter
-                        x:Key="BoolToPlayPauseTextConverter"
-                        FalseValue="{strings:Resources Key=Play}"
-                        TrueValue="{strings:Resources Key=Pause}" />
+                    <converters:NullableBooleanToSelectionToolTipConverter x:Key="CheckBoxToSelectionToolTipConverter" />
+                    <ctConverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+                    <ctConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+                    <ctConverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
+                    <ctConverters:EmptyObjectToObjectConverter
+                        x:Key="EmptyObjectToVisibilityConverter"
+                        EmptyValue="Collapsed"
+                        NotEmptyValue="Visible" />
+                    <ctConverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
 
-                    <!--  Custom Icons  -->
-                    <contract13NotPresent:FontFamily x:Key="ScreenboxSymbolThemeFontFamily">ms-appx:///Assets/Fonts/ScreenboxMDL2Assets.ttf#Screenbox MDL2 Assets</contract13NotPresent:FontFamily>
-                    <contract13Present:FontFamily x:Key="ScreenboxSymbolThemeFontFamily">ms-appx:///Assets/Fonts/ScreenboxFluentIcons.ttf#Screenbox Fluent Icons</contract13Present:FontFamily>
                     <!--  Font sizes  -->
                     <x:Double x:Key="TopNavigationViewItemFontSize">18</x:Double>
-                    <!--  Icon font sizes  -->
-                    <x:Double x:Key="DefaultIconFontSize">16</x:Double>
-                    <x:Double x:Key="GridItemPlaceholderIconFontSize">52</x:Double>
-                    <x:Double x:Key="WideGridItemPlaceholderIconFontSize">42</x:Double>
-                    <x:Double x:Key="NoContentPanelGlyphFontSize">126</x:Double>
-                    <x:Double x:Key="NoContentPanelMinimalGlyphFontSize">88</x:Double>
+                    <x:Double x:Key="TitleMediumTextBlockFontSize">32</x:Double>
 
                     <!--  Standardize header height with or without top nav  -->
                     <x:Double x:Key="PageHeaderMinHeight">48</x:Double>
@@ -89,6 +68,7 @@
                     <Thickness x:Key="TopMediumMargin">0,12,0,0</Thickness>
                     <Thickness x:Key="TopLargeMargin">0,16,0,0</Thickness>
                     <Thickness x:Key="BottomMediumMargin">0,0,0,12</Thickness>
+                    <Thickness x:Key="BottomLargeMargin">0,0,0,16</Thickness>
 
                     <Thickness x:Key="ContentPageScrollBarMargin">0,0,0,100</Thickness>
                     <Thickness x:Key="ContentPageBottomMargin">0,0,0,106</Thickness>
@@ -96,40 +76,44 @@
 
                     <CornerRadius x:Key="CircularCornerRadius">99</CornerRadius>
 
-                    <Style TargetType="FontIcon">
-                        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-                        <Setter Property="FontSize" Value="{StaticResource DefaultIconFontSize}" />
-                    </Style>
+                    <NavigationViewDisplayMode x:Key="MinimalNavigationViewDisplayMode">Minimal</NavigationViewDisplayMode>
 
-                    <!--  Header style  -->
+                    <!--  Animations  -->
+                    <ctAnimations:ImplicitAnimationSet x:Key="FadeInImplicitAnimation">
+                        <ctAnimations:OpacityAnimation
+                            EasingType="Linear"
+                            To="1"
+                            Duration="{StaticResource ControlFasterAnimationDuration}" />
+                    </ctAnimations:ImplicitAnimationSet>
+                    <ctAnimations:ImplicitAnimationSet x:Key="FadeOutImplicitAnimation">
+                        <ctAnimations:OpacityAnimation
+                            EasingType="Linear"
+                            To="0"
+                            Duration="{StaticResource ControlFasterAnimationDuration}" />
+                    </ctAnimations:ImplicitAnimationSet>
+
+                    <!--  Shadow  -->
+                    <ThemeShadow x:Key="ElevationThemeShadow" />
+
+                    <!--  Styles  -->
                     <Style
-                        x:Key="PageHeaderTextBlockStyle"
+                        x:Key="TitleMediumTextBlockStyle"
                         BasedOn="{StaticResource BaseTextBlockStyle}"
                         TargetType="TextBlock">
                         <Setter Property="AutomationProperties.HeadingLevel" Value="Level1" />
-                        <Setter Property="FontSize" Value="34" />
+                        <Setter Property="FontSize" Value="{StaticResource TitleMediumTextBlockFontSize}" />
                         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
                     </Style>
-
-                    <!--  Semantic zoom group-level style  -->
-                    <DataTemplate x:Key="GroupOverviewLetterItemTemplate">
-                        <Button
-                            MinWidth="{StaticResource GridViewHeaderItemMinHeight}"
-                            MinHeight="{StaticResource GridViewHeaderItemMinHeight}"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            ClickMode="Hover"
-                            IsEnabled="{Binding Group.Count, Converter={StaticResource DoubleToBoolConverter}, Mode=OneWay}">
-                            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{Binding Group.Key}" />
-                        </Button>
-                    </DataTemplate>
-
                 </ResourceDictionary>
 
+                <sbuc:XamlControlsResources />
+
                 <ResourceDictionary Source="ms-appx:///Styles/Button.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/Icon.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/ItemContainer.xaml" />
 
             </muxc:XamlControlsResources.MergedDictionaries>
         </muxc:XamlControlsResources>
     </Application.Resources>
 </Application>
+

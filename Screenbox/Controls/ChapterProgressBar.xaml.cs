@@ -1,11 +1,12 @@
-﻿#nullable enable
-
-using CommunityToolkit.WinUI;
-using Screenbox.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
+using CommunityToolkit.WinUI;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core.Helpers;
+using Screenbox.Core.ViewModels;
 using Windows.Media.Core;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -13,227 +14,289 @@ using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Screenbox.Controls
+namespace Screenbox.Controls;
+
+public sealed partial class ChapterProgressBar : UserControl
 {
-    public sealed partial class ChapterProgressBar : UserControl
+    public static readonly DependencyProperty ChaptersProperty = DependencyProperty.Register(
+        nameof(Chapters),
+        typeof(IReadOnlyCollection<ChapterCue>),
+        typeof(ChapterProgressBar),
+        new PropertyMetadata(null, OnChaptersChanged));
+
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
+        nameof(Value),
+        typeof(double),
+        typeof(ChapterProgressBar),
+        new PropertyMetadata(0d, OnValueChanged));
+
+    public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register(
+        nameof(Maximum),
+        typeof(double),
+        typeof(ChapterProgressBar),
+        new PropertyMetadata(0d, OnMaximumChanged));
+
+    public static readonly DependencyProperty ChapterIndexProperty = DependencyProperty.Register(
+        nameof(ChapterIndex),
+        typeof(int),
+        typeof(ChapterProgressBar),
+        new PropertyMetadata(-1));
+
+    public IReadOnlyCollection<ChapterCue>? Chapters
     {
-        public static readonly DependencyProperty ChaptersProperty = DependencyProperty.Register(
-            nameof(Chapters),
-            typeof(IReadOnlyCollection<ChapterCue>),
-            typeof(ChapterProgressBar),
-            new PropertyMetadata(null, OnChaptersChanged));
+        get => (IReadOnlyCollection<ChapterCue>?)GetValue(ChaptersProperty);
+        set => SetValue(ChaptersProperty, value);
+    }
 
-        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
-            nameof(Value),
-            typeof(double),
-            typeof(ChapterProgressBar),
-            new PropertyMetadata(0d, OnValueChanged));
+    public double Value
+    {
+        get => (double)GetValue(ValueProperty);
+        set => SetValue(ValueProperty, value);
+    }
 
-        public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register(
-            nameof(Maximum),
-            typeof(double),
-            typeof(ChapterProgressBar),
-            new PropertyMetadata(0d, OnMaximumChanged));
+    public double Maximum
+    {
+        get => (double)GetValue(MaximumProperty);
+        set => SetValue(MaximumProperty, value);
+    }
 
-        public static readonly DependencyProperty ChapterIndexProperty = DependencyProperty.Register(
-            nameof(ChapterIndex),
-            typeof(int),
-            typeof(ChapterProgressBar),
-            new PropertyMetadata(-1));
+    public int ChapterIndex
+    {
+        get => (int)GetValue(ChapterIndexProperty);
+        private set => SetValue(ChapterIndexProperty, value);
+    }
 
-        public IReadOnlyCollection<ChapterCue>? Chapters
+    private ObservableCollection<ChapterViewModel> ProgressItems { get; }
+
+    private readonly DispatcherQueueTimer _chaptersUpdateTimer;
+    private readonly double _chapterSpacing;
+    private readonly ILogger<ChapterProgressBar> _logger;
+
+    public ChapterProgressBar()
+    {
+        _logger = DefaultLogging.CreateLogger<ChapterProgressBar>();
+        _chaptersUpdateTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+        ProgressItems = new ObservableCollection<ChapterViewModel>();
+        this.InitializeComponent();
+        SizeChanged += OnSizeChanged;
+
+        _chapterSpacing = (double)Resources["ChaptersSpacing"];
+    }
+
+    private static void OnChaptersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ChapterProgressBar view = (ChapterProgressBar)d;
+        if (e.OldValue is INotifyCollectionChanged oldObservable)
         {
-            get => (IReadOnlyCollection<ChapterCue>?)GetValue(ChaptersProperty);
-            set => SetValue(ChaptersProperty, value);
+            oldObservable.CollectionChanged -= view.ChaptersOnCollectionChanged;
         }
 
-        public double Value
+        if (e.NewValue is INotifyCollectionChanged newObservable)
         {
-            get => (double)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
+            newObservable.CollectionChanged += view.ChaptersOnCollectionChanged;
         }
 
-        public double Maximum
+        view.PopulateProgressItems();
+    }
+
+    private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ChapterProgressBar view = (ChapterProgressBar)d;
+        view.UpdateProgress();
+    }
+
+    private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ChapterProgressBar view = (ChapterProgressBar)d;
+        if (view.ProgressItems.Count == 1)
         {
-            get => (double)GetValue(MaximumProperty);
-            set => SetValue(MaximumProperty, value);
-        }
-
-        public int ChapterIndex
-        {
-            get => (int)GetValue(ChapterIndexProperty);
-            private set => SetValue(ChapterIndexProperty, value);
-        }
-
-        private ObservableCollection<ChapterViewModel> ProgressItems { get; }
-
-        private const double Spacing = 1;
-
-        private readonly DispatcherQueueTimer _chaptersUpdateTimer;
-
-        public ChapterProgressBar()
-        {
-            _chaptersUpdateTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            ProgressItems = new ObservableCollection<ChapterViewModel>();
-            this.InitializeComponent();
-            SizeChanged += OnSizeChanged;
-        }
-
-        private static void OnChaptersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ChapterProgressBar view = (ChapterProgressBar)d;
-            if (e.OldValue is INotifyCollectionChanged oldObservable)
+            if (view.ProgressItems[0].Width == 0)
             {
-                oldObservable.CollectionChanged -= view.ChaptersOnCollectionChanged;
+                view.ProgressItems[0].Width = view.ActualWidth;
             }
 
-            if (e.NewValue is INotifyCollectionChanged newObservable)
-            {
-                newObservable.CollectionChanged += view.ChaptersOnCollectionChanged;
-            }
-
+            view.ProgressItems[0].Maximum = (double)e.NewValue;
+        }
+        else if (view.ProgressItems.Count > 1)
+        {
             view.PopulateProgressItems();
         }
+    }
 
-        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (ProgressItems.Count == 1)
         {
-            ChapterProgressBar view = (ChapterProgressBar)d;
-            view.UpdateProgress();
+            ProgressItems[0].Width = ActualWidth;
         }
-
-        private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        else if (ProgressItems.Count > 1)
         {
-            ChapterProgressBar view = (ChapterProgressBar)d;
-            if (view.ProgressItems.Count == 1)
+            foreach (ChapterViewModel item in ProgressItems)
             {
-                if (view.ProgressItems[0].Width == 0)
-                    view.ProgressItems[0].Width = view.ActualWidth;
-
-                view.ProgressItems[0].Maximum = (double)e.NewValue;
+                item.Width = GetItemWidth(item.Maximum - item.Minimum, ProgressItems.Count);
             }
         }
+    }
 
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    private void ChaptersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        _chaptersUpdateTimer.Debounce(PopulateProgressItems, TimeSpan.FromMilliseconds(100));
+    }
+
+    private void UpdateProgress()
+    {
+        if (ProgressItems.Count == 0)
         {
-            if (ProgressItems.Count == 1)
+            return;
+        }
+
+        if (ProgressItems.Count == 1)
+        {
+            ProgressItems[0].Value = Value;
+            return;
+        }
+
+        // One easy way to handle progress update is to loop the progress items
+        // and update the Value property. However, it invokes UI update on every
+        // progress item, on every value change, which is expensive.
+        // So we do all the logic below just to update 1 item at a time.
+
+        int activeIndex = ChapterIndex;
+
+        // Find the chapter to change value to minimize UI update
+        if (activeIndex == -1 ||
+            activeIndex >= ProgressItems.Count ||
+            ProgressItems[activeIndex].Maximum < Value ||
+            ProgressItems[activeIndex].Minimum > Value)
+        {
+            if (Value > Maximum)
             {
-                ProgressItems[0].Width = ActualWidth;
+                activeIndex = -1;
             }
             else
+            {
+                for (int i = 0; i < ProgressItems.Count; i++)
+                {
+                    if (Value <= ProgressItems[i].Maximum)
+                    {
+                        activeIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Actually update the chapter progress
+        if (activeIndex != ChapterIndex)
+        {
+            // activeIndex == -1 when Value > total duration of all chapters
+            if (activeIndex == -1 || ChapterIndex == -1)
             {
                 foreach (ChapterViewModel item in ProgressItems)
                 {
-                    item.Width = GetItemWidth(item);
-                }
-            }
-        }
-
-        private void ChaptersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            _chaptersUpdateTimer.Debounce(PopulateProgressItems, TimeSpan.FromMilliseconds(50));
-        }
-
-        private void UpdateProgress()
-        {
-            if (ProgressItems.Count == 1)
-            {
-                ProgressItems[0].Value = Value;
-                return;
-            }
-
-            // One easy way to handle progress update is to loop the progress items
-            // and update the Value property. However, it invokes UI update on every
-            // progress item, on every value change, which is expensive.
-            // So we do all the logic below just to update 1 item at a time.
-
-            int activeIndex = ChapterIndex;
-
-            // Find the chapter to change value to minimize UI update
-            if (activeIndex == -1 ||
-                activeIndex >= ProgressItems.Count ||
-                ProgressItems[activeIndex].Maximum < Value ||
-                ProgressItems[activeIndex].Minimum > Value)
-            {
-                if (Value > Maximum)
-                {
-                    activeIndex = -1;
-                }
-                else
-                {
-                    for (int i = 0; i < ProgressItems.Count; i++)
-                    {
-                        if (Value <= ProgressItems[i].Maximum)
-                        {
-                            activeIndex = i;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Actually update the chapter progress
-            if (activeIndex != ChapterIndex)
-            {
-                // activeIndex == -1 when Value > total duration of all chapters
-                if (activeIndex == -1 || ChapterIndex == -1)
-                {
-                    foreach (ChapterViewModel item in ProgressItems)
-                    {
-                        item.Value = Value;
-                    }
-                }
-                else
-                {
-                    int from = Math.Min(activeIndex, ChapterIndex);
-                    int to = Math.Max(activeIndex, ChapterIndex);
-                    for (int i = from; i <= to; i++)
-                    {
-                        ProgressItems[i].Value = Value;
-                    }
-                }
-
-                ChapterIndex = activeIndex;
-            }
-            else if (activeIndex >= 0)
-            {
-                ProgressItems[activeIndex].Value = Value;
-            }
-        }
-
-        private void PopulateProgressItems()
-        {
-            ProgressItems.Clear();
-            if (Chapters?.Count > 0)
-            {
-                ChapterIndex = -1;
-                foreach (ChapterCue cue in Chapters)
-                {
-                    ChapterViewModel progressItem = new()
-                    {
-                        Minimum = cue.StartTime.TotalMilliseconds,
-                        Maximum = (cue.Duration + cue.StartTime).TotalMilliseconds
-                    };
-
-                    // This assumes Maximum is updated before this function is called
-                    progressItem.Width = GetItemWidth(progressItem);
-                    ProgressItems.Add(progressItem);
+                    item.Value = Value;
                 }
             }
             else
             {
-                ChapterIndex = 0;
-                ProgressItems.Add(new ChapterViewModel
+                int from = Math.Min(activeIndex, ChapterIndex);
+                int to = Math.Max(activeIndex, ChapterIndex);
+                for (int i = from; i <= to; i++)
                 {
-                    Maximum = Maximum,
-                    Width = ActualWidth
-                });
+                    ProgressItems[i].Value = Value;
+                }
+            }
+
+            ChapterIndex = activeIndex;
+        }
+        else if (activeIndex >= 0)
+        {
+            ProgressItems[activeIndex].Value = Value;
+        }
+    }
+
+    private void PopulateProgressItems()
+    {
+        ProgressItems.Clear();
+        if (Chapters?.Count > 0 && Maximum > 0)
+        {
+            ChapterIndex = -1;
+            var maxTime = TimeSpan.FromMilliseconds(Maximum);
+            var validChapters = ChapterHelper.Sanitize(Chapters, maxTime);
+
+            if (validChapters.Count > 0)
+            {
+                var lastChapterEndTime = TimeSpan.Zero;
+                for (int i = 0; i < validChapters.Count; i++)
+                {
+                    ChapterCue cue = validChapters[i];
+                    var gap = cue.StartTime - lastChapterEndTime;
+                    if (gap > TimeSpan.FromMilliseconds(500))
+                    {
+                        // If there is a gap between chapters, we need to add a dummy chapter
+                        ChapterViewModel gapChapter = new()
+                        {
+                            Minimum = lastChapterEndTime.TotalMilliseconds,
+                            Maximum = cue.StartTime.TotalMilliseconds,
+                        };
+
+                        ProgressItems.Add(gapChapter);
+                    }
+
+                    lastChapterEndTime = cue.StartTime + cue.Duration;
+                    var startTime = cue.StartTime.TotalMilliseconds;
+                    var endTime = lastChapterEndTime.TotalMilliseconds;
+                    ChapterViewModel chapter = new()
+                    {
+                        Minimum = startTime,
+                        Maximum = endTime,
+                    };
+
+                    ProgressItems.Add(chapter);
+                }
+
+                // Check if the last chapter end time matches the media length
+                if (Maximum - lastChapterEndTime.TotalMilliseconds > 500)
+                {
+                    // If not, we need to add a dummy chapter to fill the gap
+                    ChapterViewModel gapChapter = new()
+                    {
+                        Minimum = lastChapterEndTime.TotalMilliseconds,
+                        Maximum = Maximum,
+                    };
+
+                    ProgressItems.Add(gapChapter);
+                    _logger.LogWarning("Chapter duration does not match the media length.");
+                }
+
+                // Update the width of each chapter
+                foreach (ChapterViewModel item in ProgressItems)
+                {
+                    item.Width = GetItemWidth(item.Maximum - item.Minimum, ProgressItems.Count);
+                }
+
+                return;
             }
         }
 
-        private double GetItemWidth(ChapterViewModel item)
+        ChapterIndex = 0;
+        ProgressItems.Add(new ChapterViewModel
         {
-            double availableWidth = ActualWidth - Spacing * (Chapters?.Count ?? 0);
-            return Maximum > 0 ? (item.Maximum - item.Minimum) / Maximum * availableWidth : 0;
+            Maximum = Maximum,
+            Width = ActualWidth
+        });
+    }
+
+    private double GetItemWidth(double durationMs, int chapterCount)
+    {
+        if (Maximum <= 0 || durationMs <= 0)
+        {
+            return 0;
         }
+
+        const int AlignmentAdjustment = 1; // Tested value to make the items aligned visually
+        var totalChapterSpacing = chapterCount > 0 ? _chapterSpacing * (chapterCount - 1) : 0;
+        double availableWidth = ActualWidth - totalChapterSpacing - AlignmentAdjustment;
+        return availableWidth > 0 ? durationMs / Maximum * availableWidth : 0;
     }
 }

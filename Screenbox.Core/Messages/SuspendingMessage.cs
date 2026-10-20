@@ -1,9 +1,8 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
-namespace Screenbox.Core.Messages
+namespace Screenbox.Core.Messages;
+
+public partial class SuspendingMessage : CollectionRequestMessage<Task>
 {
-    public class SuspendingMessage : CollectionRequestMessage<Task>
-    {
-    }
 }

@@ -1,11 +1,10 @@
-﻿#nullable enable
-
 using System;
 using System.Windows.Input;
 using Windows.UI.Xaml;
 
 namespace Screenbox.Commands;
-internal class BindableCommand : DependencyObject, ICommand
+
+internal sealed partial class BindableCommand : DependencyObject, ICommand
 {
     public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(
         nameof(Command),
@@ -27,7 +26,7 @@ internal class BindableCommand : DependencyObject, ICommand
         }
     }
 
-    private void OnCanExecuteChanged(object sender, EventArgs e)
+    private void OnCanExecuteChanged(object? sender, EventArgs e)
     {
         CanExecuteChanged?.Invoke(this, e);
     }
@@ -38,12 +37,12 @@ internal class BindableCommand : DependencyObject, ICommand
         set => SetValue(CommandProperty, value);
     }
 
-    public bool CanExecute(object parameter)
+    public bool CanExecute(object? parameter)
     {
         return Command?.CanExecute(parameter) ?? false;
     }
 
-    public void Execute(object parameter)
+    public void Execute(object? parameter)
     {
         Command?.Execute(parameter);
     }

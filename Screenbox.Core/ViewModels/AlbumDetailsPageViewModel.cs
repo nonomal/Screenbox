@@ -1,100 +1,103 @@
-﻿#nullable enable
-
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Screenbox.Core.Helpers;
 using Screenbox.Core.Messages;
-using Screenbox.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class AlbumDetailsPageViewModel : ObservableRecipient
 {
-    public sealed partial class AlbumDetailsPageViewModel : ObservableRecipient
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Year))]
+    [NotifyPropertyChangedFor(nameof(SongsCount))]
+    [NotifyPropertyChangedFor(nameof(TotalDuration))]
+    public partial AlbumViewModel? Source { get; set; }
+
+    [ObservableProperty]
+    public partial MediaViewModel? ContextMedia { get; set; }
+
+    public uint? Year => Source?.Year;
+
+    public int SongsCount => Source?.RelatedSongs.Count ?? 0;
+
+    public TimeSpan TotalDuration => Source != null ? GetTotalDuration(Source.RelatedSongs) : TimeSpan.Zero;
+
+    public ObservableCollection<MediaViewModel> SortedItems { get; }
+
+    private List<MediaViewModel>? _itemList;
+
+    public AlbumDetailsPageViewModel()
     {
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(Year))]
-        [NotifyPropertyChangedFor(nameof(SongsCount))]
-        [NotifyPropertyChangedFor(nameof(TotalDuration))]
-        private AlbumViewModel _source = null!;
+        SortedItems = new ObservableCollection<MediaViewModel>();
+    }
 
-        public uint? Year => Source.Year;
-
-        public int SongsCount => Source.RelatedSongs.Count;
-
-        public TimeSpan TotalDuration => GetTotalDuration(Source.RelatedSongs);
-
-        public ObservableCollection<MediaViewModel> SortedItems { get; }
-
-        private List<MediaViewModel>? _itemList;
-        private readonly IFilesService _filesService;
-
-        public AlbumDetailsPageViewModel(IFilesService filesService)
+    public void OnNavigatedTo(object? parameter)
+    {
+        Source = parameter switch
         {
-            _filesService = filesService;
-            SortedItems = new ObservableCollection<MediaViewModel>();
-        }
+            NavigationMetadata { Parameter: AlbumViewModel source } => source,
+            AlbumViewModel source => source,
+            _ => throw new ArgumentException("Navigation parameter is not an album")
+        };
+    }
 
-        public void OnNavigatedTo(object? parameter)
+    async partial void OnSourceChanged(AlbumViewModel? value)
+    {
+        if (value == null)
         {
-            Source = parameter switch
-            {
-                NavigationMetadata { Parameter: AlbumViewModel source } => source,
-                AlbumViewModel source => source,
-                _ => throw new ArgumentException("Navigation parameter is not an album")
-            };
-        }
-
-        async partial void OnSourceChanged(AlbumViewModel value)
-        {
-            var sorted = value.RelatedSongs.OrderBy(m =>
-                    m.MediaInfo.MusicProperties.TrackNumber != 0    // Track number should start with 1
-                        ? m.MediaInfo.MusicProperties.TrackNumber
-                        : uint.MaxValue)
-                .ThenBy(m => m.Name, StringComparer.CurrentCulture);
-
             SortedItems.Clear();
-            foreach (MediaViewModel media in sorted)
-            {
-                SortedItems.Add(media);
-            }
-
-            if (value.AlbumArt == null)
-            {
-                await value.LoadAlbumArtAsync(_filesService);
-            }
+            _itemList = null;
+            return;
         }
 
-        [RelayCommand]
-        private void Play(MediaViewModel item)
+        var sorted = value.RelatedSongs.OrderBy(m =>
+                m.MediaInfo.MusicProperties.TrackNumber != 0    // Track number should start with 1
+                    ? m.MediaInfo.MusicProperties.TrackNumber
+                    : uint.MaxValue)
+            .ThenBy(m => m.Name, StringComparer.CurrentCulture);
+
+        SortedItems.Clear();
+        foreach (MediaViewModel media in sorted)
         {
-            _itemList ??= SortedItems.ToList();
-            Messenger.SendQueueAndPlay(item, _itemList);
+            SortedItems.Add(media);
         }
 
-        [RelayCommand]
-        private void ShuffleAndPlay()
+        if (value.AlbumArt == null)
         {
-            if (Source.RelatedSongs.Count == 0) return;
-            Random rnd = new();
-            List<MediaViewModel> shuffledList = Source.RelatedSongs.OrderBy(_ => rnd.Next()).ToList();
-            Messenger.Send(new ClearPlaylistMessage());
-            Messenger.Send(new QueuePlaylistMessage(shuffledList));
-            Messenger.Send(new PlayMediaMessage(shuffledList[0], true));
+            await value.LoadAlbumArtAsync();
         }
+    }
 
-        private static TimeSpan GetTotalDuration(IEnumerable<MediaViewModel> items)
+    [RelayCommand]
+    private void Play(MediaViewModel item)
+    {
+        _itemList ??= SortedItems.ToList();
+        Messenger.SendQueueAndPlay(item, _itemList);
+    }
+
+    [RelayCommand]
+    private void ShuffleAndPlay()
+    {
+        if (Source == null || Source.RelatedSongs.Count == 0) return;
+        Random rnd = new();
+        List<MediaViewModel> shuffledList = Source.RelatedSongs.OrderBy(_ => rnd.Next()).ToList();
+        var playlist = new Models.Playlist(0, shuffledList);
+        Messenger.Send(new SetQueueMessage(playlist, true));
+    }
+
+    private static TimeSpan GetTotalDuration(IEnumerable<MediaViewModel> items)
+    {
+        TimeSpan duration = TimeSpan.Zero;
+        foreach (MediaViewModel item in items)
         {
-            TimeSpan duration = TimeSpan.Zero;
-            foreach (MediaViewModel item in items)
-            {
-                duration += item.Duration;
-            }
-
-            return duration;
+            duration += item.Duration;
         }
+
+        return duration;
     }
 }

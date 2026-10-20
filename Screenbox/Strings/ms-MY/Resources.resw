@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -139,6 +139,23 @@
   <data name="FailedToSaveFrameNotificationTitle" xml:space="preserve">
     <value>Gagal menyimpan bingkai</value>
   </data>
+  <data name="TimeElapsed" xml:space="preserve">
+    <value>Masa berlalu</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Masa berbaki</value>
+  </data>
+  <data name="TimeLength" xml:space="preserve">
+    <value>Jumlah durasi</value>
+  </data>
+  <data name="ChapterPluralized_One" xml:space="preserve">
+    <value>Chapter</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="ChapterPluralized_Other" xml:space="preserve">
+    <value>Chapters</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
   <data name="ChapterName" xml:space="preserve">
     <value>Bab {0}</value>
     <comment>#Format[Int32 chapter]</comment>
@@ -166,6 +183,9 @@
   </data>
   <data name="Volume" xml:space="preserve">
     <value>Volum</value>
+  </data>
+  <data name="VolumeSliderTooltip" xml:space="preserve">
+    <value>Laras volum</value>
   </data>
   <data name="Seek" xml:space="preserve">
     <value>Geladah</value>
@@ -211,6 +231,21 @@
   <data name="AddToQueue" xml:space="preserve">
     <value>Tambah ke baris gilir</value>
   </data>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Pilih semua</value>
+  </data>
+  <data name="SelectAllToolTip" xml:space="preserve">
+    <value>Pilih semua item dalam pandangan ini</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Pilih tiada</value>
+  </data>
+  <data name="SelectNoneToolTip" xml:space="preserve">
+    <value>Bersihkan pilihan anda</value>
+  </data>
   <data name="ClearSelection" xml:space="preserve">
     <value>Bersihkan pilihan</value>
   </data>
@@ -218,7 +253,7 @@
     <value>Alih keluar</value>
   </data>
   <data name="PlayNext" xml:space="preserve">
-    <value>Main kemudian</value>
+    <value>Main seterusnya</value>
   </data>
   <data name="MoveUp" xml:space="preserve">
     <value>Gerak ke atas</value>
@@ -248,7 +283,10 @@
     <value>Kosong</value>
   </data>
   <data name="RestoreView" xml:space="preserve">
-    <value>Pulihkan pandangan video</value>
+    <value>Pulihkan pandangan imersif</value>
+  </data>
+  <data name="MinimizeImmersiveView" xml:space="preserve">
+    <value>Minimumkan pandangan imersif</value>
   </data>
   <data name="Cast" xml:space="preserve">
     <value>Acu</value>
@@ -304,6 +342,9 @@
   <data name="SearchBoxPlaceholderText" xml:space="preserve">
     <value>Cari</value>
   </data>
+  <data name="SearchBoxToolTip" xml:space="preserve">
+    <value>Cari video, lagu, album, dan lebih</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Tetapan</value>
   </data>
@@ -321,6 +362,12 @@
   </data>
   <data name="OpenFileLocation" xml:space="preserve">
     <value>Buka lokasi fail</value>
+  </data>
+  <data name="OpenInFileExplorer" xml:space="preserve">
+    <value>Open in File Explorer</value>
+  </data>
+  <data name="OpenWith" xml:space="preserve">
+    <value>Open with</value>
   </data>
   <data name="PropertyAlbum" xml:space="preserve">
     <value>Album</value>
@@ -424,17 +471,26 @@
   <data name="Artists" xml:space="preserve">
     <value>Artis</value>
   </data>
+  <data name="Song" xml:space="preserve">
+    <value>Lagu</value>
+  </data>
   <data name="Songs" xml:space="preserve">
     <value>Lagu</value>
   </data>
   <data name="OpenFilesToolTip" xml:space="preserve">
     <value>Semak imbas fail untuk bermain</value>
   </data>
+  <data name="OpenFilesSecondaryToolTip" xml:space="preserve">
+    <value>Lebih pilihan untuk membuka media</value>
+  </data>
   <data name="AddFiles" xml:space="preserve">
     <value>Tambah fail</value>
   </data>
   <data name="AddFilesToPlayQueueToolTip" xml:space="preserve">
     <value>Semak imbas fail untuk menambah ke baris gilir main</value>
+  </data>
+  <data name="AddFilesToPlayQueueSecondaryToolTip" xml:space="preserve">
+    <value>Lebih pilihan untuk menambah media ke baris gilir main</value>
   </data>
   <data name="AddMusicFolderToolTip" xml:space="preserve">
     <value>Tambah folder pada pustaka muzik anda</value>
@@ -585,6 +641,9 @@
   <data name="SettingsShowRecentHeader" xml:space="preserve">
     <value>Tunjuk baru-baru ini</value>
   </data>
+  <data name="SettingsShowControlsHeader" xml:space="preserve">
+    <value>Papar kawalan pada jeda</value>
+  </data>
   <data name="SettingsVideoLibraryLocationsHeader" xml:space="preserve">
     <value>Lokasi pustaka video</value>
   </data>
@@ -609,6 +668,18 @@
   <data name="SettingsVolumeBoostDescription" xml:space="preserve">
     <value>Benarkan volum maksimum melebihi 100%</value>
   </data>
+  <data name="SettingsRewindDescription" xml:space="preserve">
+    <value>The amount of time skipped backward when you rewind</value>
+  </data>
+  <data name="SettingsFastForwardDescription" xml:space="preserve">
+    <value>The amount of time skipped forward when you fast forward</value>
+  </data>
+  <data name="SettingsOnScreenControlsHeader" xml:space="preserve">
+    <value>Kawalan atas skrin</value>
+  </data>
+  <data name="SettingsOnScreenControlsDescription" xml:space="preserve">
+    <value>Pilih kawalan mana yang mungkin muncul dalam tindanan, dan perilaku sembunyi secara automatik</value>
+  </data>
   <data name="SettingsGesturesHeader" xml:space="preserve">
     <value>Gerak isyarat</value>
   </data>
@@ -617,9 +688,6 @@
   </data>
   <data name="SettingsGestureVolume" xml:space="preserve">
     <value>Seret secara menegak untuk melaras volum</value>
-  </data>
-  <data name="SettingsGestureTap" xml:space="preserve">
-    <value>Ketik sebarang tempat untuk bermain atau menjeda</value>
   </data>
   <data name="AppFriendlyName" xml:space="preserve">
     <value>Pemain Media Screenbox</value>
@@ -649,11 +717,26 @@
   <data name="SubtitleAddedNotificationTitle" xml:space="preserve">
     <value>Sari kata ditambah</value>
   </data>
+  <data name="PlaylistCreatedNotificationTitle" xml:space="preserve">
+    <value>Playlist "{0}" created</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistDeletedNotificationTitle" xml:space="preserve">
+    <value>Playlist "{0}" deleted</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistRenamedNotificationTitle" xml:space="preserve">
+    <value>Playlist renamed to "{0}"</value>
+    <comment>#Format[String name]</comment>
+  </data>
   <data name="CriticalError" xml:space="preserve">
     <value>Ralat kritikal</value>
   </data>
   <data name="CriticalErrorDirect3D11NotAvailable" xml:space="preserve">
     <value>Tiada pemapar yang serasi tersedia. Sila pastikan Direct3D 11 tersedia pada peranti anda.</value>
+  </data>
+  <data name="CriticalErrorMoreInformation" xml:space="preserve">
+    <value>Untuk lebih maklumat tentang isu ini dan pembetulan yang mungkin, lawati</value>
   </data>
   <data name="FailedToOpenFilesNotificationTitle" xml:space="preserve">
     <value>Gagal membuka fail</value>
@@ -689,6 +772,9 @@
   <data name="SettingsCategoryAdvanced" xml:space="preserve">
     <value>Lanjutan</value>
   </data>
+  <data name="SettingsCategoryPrivacy" xml:space="preserve">
+    <value>Privasi</value>
+  </data>
   <data name="SettingsAdvancedModeHeader" xml:space="preserve">
     <value>Mod lanjutan</value>
   </data>
@@ -721,6 +807,9 @@
   </data>
   <data name="License" xml:space="preserve">
     <value>Lesen</value>
+  </data>
+  <data name="ThirdPartyNotices" xml:space="preserve">
+    <value>Pengakuan perisian pihak ketiga</value>
   </data>
   <data name="HyperlinkTranslate" xml:space="preserve">
     <value>Bantu terjemah</value>
@@ -771,9 +860,334 @@
     <value>Argumen aktif</value>
   </data>
   <data name="SettingsUseMultipleInstancesHeader" xml:space="preserve">
-    <value>Allow multiple instances</value>
+    <value>Benarkan berbilang instans</value>
   </data>
   <data name="SettingsUseMultipleInstancesDescription" xml:space="preserve">
-    <value>Always open media files in a new instance</value>
+    <value>Sentiasa buka fail media dalam instans baharu</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Isih mengikut</value>
+  </data>
+  <data name="SortByAutomationName" xml:space="preserve">
+    <value>Pilihan isih mengikut {0} dipilih</value>
+    <comment>#Format[String sortBy]</comment>
+  </data>
+  <data name="Artist" xml:space="preserve">
+    <value>Artis</value>
+  </data>
+  <data name="ReleasedYear" xml:space="preserve">
+    <value>Tahun dirilis</value>
+  </data>
+  <data name="SettingsAudioVisualHeader" xml:space="preserve">
+    <value>Visual audio</value>
+  </data>
+  <data name="GetLivelyApp" xml:space="preserve">
+    <value>Dapatkan Lively Wallpaper</value>
+  </data>
+  <data name="GetLivelyVisuals" xml:space="preserve">
+    <value>Muat turun visual di GitHub</value>
+  </data>
+  <data name="VisualizerOptionsToolTip" xml:space="preserve">
+    <value>Pilihan visual audio</value>
+  </data>
+  <data name="Visuals" xml:space="preserve">
+    <value>Visual</value>
+  </data>
+  <data name="BrowseFiles" xml:space="preserve">
+    <value>Semak imbas fail</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Lalai</value>
+  </data>
+  <data name="SettingsAudioVisualDescription" xml:space="preserve">
+    <value>Pilih tirai belakang untuk memberi main balik audio anda semarak visual dalam pandangan imersif</value>
+  </data>
+  <data name="PoweredByLivelyWallpaper" xml:space="preserve">
+    <value>Dikuasakan oleh Lively Wallpaper</value>
+  </data>
+  <data name="SettingsImportVisualsHeader" xml:space="preserve">
+    <value>Import visual</value>
+  </data>
+  <data name="SettingsImportVisualsDescription" xml:space="preserve">
+    <value>Dapatkan lebih visual melalui apl Lively Wallpaper atau muat turun ia dari GitHub</value>
+  </data>
+  <data name="DateAdded" xml:space="preserve">
+    <value>Tarikh ditambah</value>
+  </data>
+  <data name="Media" xml:space="preserve">
+    <value>Media</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>Fail</value>
+  </data>
+  <data name="MusicLibrary" xml:space="preserve">
+    <value>Muzik</value>
+  </data>
+  <data name="VideoLibrary" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="ShowAlbum" xml:space="preserve">
+    <value>Tunjuk album</value>
+  </data>
+  <data name="ShowArtist" xml:space="preserve">
+    <value>Tunjuk artis</value>
+  </data>
+  <data name="FailedToLoadVisualNotificationTitle" xml:space="preserve">
+    <value>Gagal memuat visual</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderDescription" xml:space="preserve">
+    <value>Apabila membuka fail tunggal, tambah semua fail lain dalam folder secara automatik ke baris gilir main</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderHeader" xml:space="preserve">
+    <value>Tambah semua fail dalam folder ke baris gilir</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Guna tetapan sistem</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Gelap</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Cerah</value>
+  </data>
+  <data name="SettingsThemeSelectionDescription" xml:space="preserve">
+    <value>Ubah skema warna keseluruhan apl</value>
+  </data>
+  <data name="SettingsThemeSelectionHeader" xml:space="preserve">
+    <value>Tema apl</value>
+  </data>
+  <data name="SettingsCategoryPersonalization" xml:space="preserve">
+    <value>Pemeribadian</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionHeader" xml:space="preserve">
+    <value>Sentiasa sambung dari posisi terakhir</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionDescription" xml:space="preserve">
+    <value>Terus bermain dari tempat terakhir anda berhenti ketika membuka fail</value>
+  </data>
+  <data name="SettingsVideoUpscalingHeader" xml:space="preserve">
+    <value>Kaedah peningkatan video</value>
+  </data>
+  <data name="SettingsVideoUpscalingDescription" xml:space="preserve">
+    <value>Super resolution upscaling requires compatible hardware and driver support.</value>
+  </data>
+  <data name="VideoUpscalingLinear" xml:space="preserve">
+    <value>Dwilinear</value>
+  </data>
+  <data name="VideoUpscalingPoint" xml:space="preserve">
+    <value>Poin</value>
+  </data>
+  <data name="VideoUpscalingSuper" xml:space="preserve">
+    <value>Resolusi super</value>
+  </data>
+  <data name="SettingsShowChaptersHeader" xml:space="preserve">
+    <value>Papar nama bab apabila tersedia</value>
+  </data>
+  <data name="SettingsOnScreenControlsHideDelayHeader" xml:space="preserve">
+    <value>Ketepikan kawalan selepas tempoh masa ini</value>
+  </data>
+  <data name="SecondsCount_One" xml:space="preserve">
+    <value>{0} saat</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SecondsCount_Other" xml:space="preserve">
+    <value>{0} saat</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsLanguageSelectionHeader" xml:space="preserve">
+    <value>Bahasa apl</value>
+  </data>
+  <data name="SettingsLanguageSelectionDescription" xml:space="preserve">
+    <value>Ubah bahasa paparan apl</value>
+  </data>
+  <data name="LanguageSystemDefault" xml:space="preserve">
+    <value>Guna bahasa sistem</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>Tiada hasil untuk "{0}"</value>
+    <comment>#Format[String searchQuery]</comment>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="SettingsGestureTapHeader" xml:space="preserve">
+    <value>Tap</value>
+  </data>
+  <data name="SettingsGestureSwipeUpHeader" xml:space="preserve">
+    <value>Swipe up</value>
+  </data>
+  <data name="SettingsGestureSwipeDownHeader" xml:space="preserve">
+    <value>Swipe down</value>
+  </data>
+  <data name="SettingsGestureSwipeLeftHeader" xml:space="preserve">
+    <value>Swipe left</value>
+  </data>
+  <data name="SettingsGestureSwipeRightHeader" xml:space="preserve">
+    <value>Swipe right</value>
+  </data>
+  <data name="SettingsGesturePressAndHoldHeader" xml:space="preserve">
+    <value>Enable press and hold to increase playback speed</value>
+  </data>
+  <data name="PlaybackActionKindNone" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="PlayPause" xml:space="preserve">
+    <value>Play/pause</value>
+  </data>
+  <data name="Rewind" xml:space="preserve">
+    <value>Rewind</value>
+  </data>
+  <data name="FastForward" xml:space="preserve">
+    <value>Fast forward</value>
+  </data>
+  <data name="DecreaseVolume" xml:space="preserve">
+    <value>Decrease volume</value>
+  </data>
+  <data name="IncreaseVolume" xml:space="preserve">
+    <value>Increase volume</value>
+  </data>
+  <data name="DecreaseRate" xml:space="preserve">
+    <value>Decrease speed</value>
+  </data>
+  <data name="IncreaseRate" xml:space="preserve">
+    <value>Increase speed</value>
+  </data>
+  <data name="NextTrack" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="PreviousTrack" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="NextChapter" xml:space="preserve">
+    <value>Next chapter</value>
+  </data>
+  <data name="PreviousChapter" xml:space="preserve">
+    <value>Previous chapter</value>
+  </data>
+  <data name="AddToPlaylist" xml:space="preserve">
+    <value>Tambah ke senarai main</value>
+  </data>
+  <data name="CreateNewPlaylist" xml:space="preserve">
+    <value>Cipta senarai main baharu</value>
+  </data>
+  <data name="NewPlaylist" xml:space="preserve">
+    <value>Senarai main baharu</value>
+  </data>
+  <data name="ImportPlaylist" xml:space="preserve">
+    <value>Import playlist</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="SelectedItem" xml:space="preserve">
+    <value>Item terpilih</value>
+  </data>
+  <data name="SelectedItems" xml:space="preserve">
+    <value>Item terpilih</value>
+  </data>
+  <data name="NoPlaylists" xml:space="preserve">
+    <value>Tiada senarai main</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Cipta</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Batal</value>
+  </data>
+  <data name="NewPlaylistDefaultName" xml:space="preserve">
+    <value>Untitled playlist</value>
+  </data>
+  <data name="CreatePlaylistPlaceholder" xml:space="preserve">
+    <value>Masukkan nama untuk senarai main ini</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>Senarai main</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Padam</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Nama Semula</value>
+  </data>
+  <data name="RenamePlaylistPlaceholder" xml:space="preserve">
+    <value>Masukkan nama baharu untuk senarai main ini</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>Nama semula senarai main</value>
+  </data>
+  <data name="DeletePlaylist" xml:space="preserve">
+    <value>Padam senarai main</value>
+  </data>
+  <data name="DeletePlaylistConfirmation" xml:space="preserve">
+    <value>Anda pasti mahu memadam senarai main '{0}'? Tindakan ini tidak boleh dibuat asal.</value>
+    <comment>#Format[String playlistName]</comment>
+  </data>
+  <data name="PlaylistsSelected_One" xml:space="preserve">
+    <value>{0} playlist selected</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="PlaylistsSelected_Other" xml:space="preserve">
+    <value>{0} playlists selected</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsSavePlaybackPositionHeader" xml:space="preserve">
+    <value>Sejarah posisi main balik</value>
+  </data>
+  <data name="SettingsSavePlaybackPositionDescription" xml:space="preserve">
+    <value>Simpan sejarah posisi main balik saya pada peranti ini untuk menyambung semula di tempat anda berhenti</value>
+  </data>
+  <data name="SettingsClearPlaybackPositionHeader" xml:space="preserve">
+    <value>Bersihkan sejarah posisi main balik peranti</value>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_One" xml:space="preserve">
+    <value>Added {0} item to playlist "{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_Other" xml:space="preserve">
+    <value>Added {0} items to playlist "{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="NoPlaylistsPanelHeader" xml:space="preserve">
+    <value>You don't have any playlists</value>
+  </data>
+  <data name="NoPlaylistsPanelSubtext" xml:space="preserve">
+    <value>Create your first playlist to organize your favorite videos and music.</value>
+  </data>
+  <data name="NoPlaylistItems" xml:space="preserve">
+    <value>There are no items in this playlist.</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationHeader" xml:space="preserve">
+    <value>Frame captures will save to</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationDescription" xml:space="preserve">
+    <value>Frame captures location</value>
+  </data>
+  <data name="ChangeFolder" xml:space="preserve">
+    <value>Change folder</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="AspectRatioStatusMessage" xml:space="preserve">
+    <value>Aspect ratio: {0}</value>
+    <comment>#Format[String ratio]</comment>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Audio options</value>
+  </data>
+  <data name="SubtitleOptions" xml:space="preserve">
+    <value>Subtitle options</value>
+  </data>
+  <data name="DecreaseValue" xml:space="preserve">
+    <value>Decrease {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
+  <data name="IncreaseValue" xml:space="preserve">
+    <value>Increase {0}</value>
+    <comment>#Format[String value]</comment>
   </data>
 </root>
+

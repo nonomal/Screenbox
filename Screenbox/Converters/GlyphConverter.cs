@@ -1,0 +1,299 @@
+using System;
+using Screenbox.Core.Enums;
+using Screenbox.Core.Helpers;
+using Screenbox.Core.ViewModels;
+using Screenbox.Helpers;
+using Windows.Media;
+using Windows.Storage;
+
+using MediaPlaybackType = Screenbox.Core.Enums.MediaPlaybackType;
+
+namespace Screenbox.Converters;
+
+/// <summary>
+/// Provides <see langword="static"/> methods to convert value types to glyph codes.
+/// </summary>
+public static partial class GlyphConverter
+{
+    //private const string PreviousSolidGlyph = "\uE622";
+    //private const string NextSolidGlyph = "\uE623";
+    private const string PauseSolidGlyph = "\uE62E";
+    private const string MuteGlyph = "\uE74F";
+    private const string PlayGlyph = "\uE768";
+    private const string PauseGlyph = "\uE769";
+    private const string PreviousGlyph = "\uE892";
+    private const string NextGlyph = "\uE893";
+    private const string MoviesGlyph = "\uE8B2";
+    private const string AudioGlyph = "\uE8D6";
+    private const string PlaySolidGlyph = "\uF5B0";
+
+    /// <summary>
+    /// Gets the shuffle glyph code based on a boolean condition.
+    /// </summary>
+    /// <remarks>The glyph code adapts according to the current text reading order.</remarks>
+    /// <param name="value">A <see cref="bool"/> that specifies the shuffle mode.</param>
+    /// <returns>
+    /// <b>Shuffle</b> glyph code <see cref="string"/> if the <paramref name="value"/> is <see langword="true"/>;
+    /// otherwise, <b>Shuffle Off</b> glyph code.
+    /// </returns>
+    public static string ToShuffleGlyph(bool value)
+    {
+        const string ShuffleGlyph = "\uE8B1";
+        const string ShuffleOffGlyph = "\U000F002A";
+        const string ShuffleMirroredGlyph = "\U000F0021";
+        const string ShuffleOffMirroredGlyph = "\U000F002B";
+
+        return value
+            ? (GlobalizationHelper.IsRightToLeftLanguage ? ShuffleMirroredGlyph : ShuffleGlyph)
+            : (GlobalizationHelper.IsRightToLeftLanguage ? ShuffleOffMirroredGlyph : ShuffleOffGlyph);
+    }
+
+    /// <summary>
+    /// Gets the repeat glyph code based on the current auto-repeat mode of the player.
+    /// </summary>
+    /// <remarks>The glyph code adapts according to the current text reading order.</remarks>
+    /// <param name="repeatMode">A <see langword="enum"/> that specifies the auto repeat mode for the <see cref="MediaPlaybackAutoRepeatMode"/>.</param>
+    /// <returns>
+    /// <b>Repeat Off</b> glyph code <see cref="string"/> if <paramref name="repeatMode"/> is <see cref="MediaPlaybackAutoRepeatMode.None"/>,
+    /// <b>Repeat All</b> glyph code for <see cref="MediaPlaybackAutoRepeatMode.List"/>, or <b>Repeat One</b> glyph code for <see cref="MediaPlaybackAutoRepeatMode.Track"/>.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="repeatMode"/> is not one of the valid <see cref="MediaPlaybackAutoRepeatMode"/> value.</exception>
+    public static string ToRepeatGlyph(MediaPlaybackAutoRepeatMode repeatMode)
+    {
+        const string RepeatOffGlyph = "\uF5E7";
+        const string RepeatOneGlyph = "\uE8ED";
+        const string RepeatAllGlyph = "\uE8EE";
+        const string RepeatOneMirroredGlyph = "\U000F004D";
+
+        return repeatMode switch
+        {
+            MediaPlaybackAutoRepeatMode.None => RepeatOffGlyph,
+            MediaPlaybackAutoRepeatMode.Track => GlobalizationHelper.IsRightToLeftLanguage ? RepeatOneMirroredGlyph : RepeatOneGlyph,
+            MediaPlaybackAutoRepeatMode.List => RepeatAllGlyph,
+            _ => throw new ArgumentOutOfRangeException(nameof(repeatMode), repeatMode, null),
+        };
+    }
+
+    /// <summary>
+    /// Gets the speed glyph code based on the current player playback rate.
+    /// </summary>
+    /// <param name="speed">A <see langword="double"/> value that specifies the playback rate.</param>
+    /// <returns>
+    /// <b>Speed Medium</b> glyph if <paramref name="speed"/> equals 1 x, <b>Speed High</b> glyph if its greater than 1 x,
+    /// <b>Auto Racing</b> glyph if its greater than 1.75 x, <b>Speed Low</b> glyph if its less than 1 x,
+    /// <b>Speed Off</b> glyph if its less than 0.25 x.
+    /// </returns>
+    public static string ToSpeedGlyph(double speed)
+    {
+        const string SpeedOffGlyph = "\uEC48";
+        const string SpeedLowGlyph = "\U000F00A4";
+        const string SpeedMediumGlyph = "\uEC49";
+        const string SpeedHighGlyph = "\uEC4A";
+        const string AutoRacingGlyph = "\uEB24";
+
+        const double VeryHighSpeed = 1.75;
+        const double NormalSpeed = 1.0;
+        const double VeryLowSpeed = 0.25;
+
+        const double Tolerance = 0.0001;
+
+        return speed switch
+        {
+            >= VeryHighSpeed - Tolerance => AutoRacingGlyph,
+            > NormalSpeed + Tolerance => SpeedHighGlyph,
+            >= NormalSpeed - Tolerance and <= NormalSpeed + Tolerance => SpeedMediumGlyph,
+            > VeryLowSpeed + Tolerance => SpeedLowGlyph,
+            _ => SpeedOffGlyph,
+        };
+    }
+
+    /// <summary>
+    /// Gets the recent glyph code based on a boolean condition.
+    /// </summary>
+    /// <param name="value">A <see cref="bool"/> that specifies the show recent setting.</param>
+    /// <returns>
+    /// <b>Recent</b> glyph code <see cref="string"/> if the <paramref name="value"/> is <see langword="true"/>;
+    /// otherwise, <b>Recent Empty</b> glyph code.
+    /// </returns>
+    public static string ToRecentGlyph(bool value)
+    {
+        const string RecentGlyph = "\U000F00F0";
+        const string RecentEmptyGlyph = "\U000F00F1";
+
+        return value ? RecentGlyph : RecentEmptyGlyph;
+    }
+
+    /// <summary>
+    /// Gets the playing state gylph code based on a boolean condition.
+    /// </summary>
+    /// <param name="value">A <see cref="bool"/> that represents the playing state.</param>
+    /// <returns>
+    /// <strong>Play</strong> glyph code <see cref="string"/> if the <paramref name="value"/> is <see langword="true"/>;
+    /// otherwise, <strong>Pause</strong> glyph code.
+    /// </returns>
+    public static string ToPlayPauseGlyph(bool value)
+    {
+        return value ? PauseGlyph : PlayGlyph;
+    }
+
+    /// <summary>
+    /// Gets the playing state solid gylph code based on a boolean condition.
+    /// </summary>
+    /// <param name="value">A <see cref="bool"/> that represents the playing state.</param>
+    /// <returns>
+    /// <b>Play Solid</b> glyph code <see cref="string"/> if the <paramref name="value"/> is <see langword="true"/>;
+    /// otherwise, <b>Pause Solid</b> glyph code.
+    /// </returns>
+    public static string ToPlayPauseSolidGlyph(bool value)
+    {
+        return value ? PauseSolidGlyph : PlaySolidGlyph;
+    }
+
+    /// <summary>
+    /// Gets the volume glyph code based on mute state and volume value.
+    /// </summary>
+    /// <param name="isMute">A <see cref="bool"/> that specifies if the player is muted.</param>
+    /// <param name="volume">An <see cref="int"/> that specifies the player's volume.</param>
+    /// <returns>
+    /// <b>Mute</b> glyph code <see cref="string"/> if <paramref name="isMute"/> is <see langword="true"/>;
+    /// otherwise, a glyph code representing the volume level.
+    /// </returns>
+    public static string ToVolumeGlyph(bool isMute, int volume)
+    {
+        const string Volume0Glyph = "\uE992";
+        const string Volume1Glyph = "\uE993";
+        const string Volume2Glyph = "\uE994";
+        const string Volume3Glyph = "\uE995";
+
+        if (isMute)
+            return MuteGlyph;
+
+        return volume switch
+        {
+            < 25 => Volume0Glyph,
+            < 50 => Volume1Glyph,
+            < 75 => Volume2Glyph,
+            _ => Volume3Glyph
+        };
+    }
+
+    /// <summary>
+    /// Gets the player badge glyph code for the given playback command.
+    /// </summary>
+    /// <param name="kind">A value indicating the playback command.</param>
+    /// <param name="value">An optional value associated with the command.</param>
+    /// <returns>A glyph code representing the playback command.</returns>
+    public static string ToOsdBadgeGlyph(PlaybackCommandKind kind, object? value)
+    {
+        //const string StopSolidGlyph = "\uEE95";
+        const string ChevronLeftMedGlyph = "\uE973";
+        const string ChevronRightMedGlyph = "\uE974";
+        const string RewindGlyph = "\uE627";
+        const string FastForwardGlyph = "\uE628";
+
+        return kind switch
+        {
+            PlaybackCommandKind.Play => PlayGlyph,
+            PlaybackCommandKind.Pause => PauseGlyph,
+            //PlaybackCommandKind.Stop => StopSolidGlyph,
+            PlaybackCommandKind.Rewind => ChevronLeftMedGlyph,
+            PlaybackCommandKind.FastForward => ChevronRightMedGlyph,
+            PlaybackCommandKind.Next => NextGlyph,
+            PlaybackCommandKind.Previous => PreviousGlyph,
+            PlaybackCommandKind.Volume when value is int volume => ToVolumeGlyph(isMute: false, volume),
+            PlaybackCommandKind.Mute => MuteGlyph,
+            PlaybackCommandKind.RateUp => FastForwardGlyph,
+            PlaybackCommandKind.RateDown => RewindGlyph,
+            _ => string.Empty,
+        };
+    }
+
+    /// <summary>
+    /// Gets the search suggestion glyph code base on the suggestion category.
+    /// </summary>
+    /// <param name="value">A value indicating the type of search suggestion.</param>
+    /// <returns>
+    /// <b>Audio</b> glyph code <see cref="string"/> if <paramref name="value"/> is <see cref="SearchSuggestionType.Song"/>,
+    /// <b>MusicAlbum</b> glyph code for <see cref="SearchSuggestionType.Album"/>,
+    /// <b>Contact</b> glyph code for <see cref="SearchSuggestionType.Artist"/>,
+    /// <b>Movies</b> glyph code for <see cref="SearchSuggestionType.Video"/>,
+    /// or <b>MusicInfo</b> glyph code for <see cref="SearchSuggestionType.Playlist"/>;
+    /// otherwise, a empty string.
+    /// </returns>
+    public static string ToSearchSuggestionGlyph(SearchSuggestionType value)
+    {
+        const string ContactGlyph = "\uE77B";
+        const string MusicInfoGlyph = "\uE90B";
+        const string MusicAlbumGlyph = "\uE93C";
+
+        return value switch
+        {
+            SearchSuggestionType.Song => AudioGlyph,
+            SearchSuggestionType.Album => MusicAlbumGlyph,
+            SearchSuggestionType.Artist => ContactGlyph,
+            SearchSuggestionType.Video => MoviesGlyph,
+            SearchSuggestionType.Playlist => MusicInfoGlyph,
+            _ => string.Empty,
+        };
+    }
+
+    /// <summary>
+    /// Gets the media glyph code based on the storage item type.
+    /// </summary>
+    /// <param name="item">A <see cref="IStorageItem"/> representing a file or folder.</param>
+    /// <returns>
+    /// A glyph code representing the storage item type (folder, file, audio, or video).
+    /// </returns>
+    public static string ToStorageItemGlyph(IStorageItem item)
+    {
+        const string FolderGlyph = "\uE8B7";
+        const string DocumentGlyph = "\uE8A5";
+
+        return item switch
+        {
+            IStorageFile file when file.IsSupportedVideo() => MoviesGlyph,
+            IStorageFile file when file.IsSupportedAudio() => AudioGlyph,
+            IStorageFile => DocumentGlyph,
+            _ => FolderGlyph,
+        };
+    }
+
+    /// <summary>
+    /// Gets the media glyph code based on the media playback type.
+    /// </summary>
+    /// <param name="type">A value indicating the media type.</param>
+    /// <returns>
+    /// A glyph code representing the media type (music, video, image, or media).
+    /// </returns>
+    public static string ToMediaTypeGlyph(MediaPlaybackType type)
+    {
+        const string PhotoGlyph = "\uE91B";
+        const string MediaGlyph = "\uEA69";
+
+        return type switch
+        {
+            MediaPlaybackType.Music => AudioGlyph,
+            MediaPlaybackType.Video => MoviesGlyph,
+            MediaPlaybackType.Image => PhotoGlyph,
+            _ => MediaGlyph,
+        };
+    }
+
+    /// <summary>
+    /// Gets the media glyph code based on the media view model.
+    /// </summary>
+    /// <param name="mediaViewModel">The media view model to convert.</param>
+    /// <returns>A glyph code representing the media type.</returns>
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    public static string ToMediaGlyph(MediaViewModel? mediaViewModel)
+    {
+        const string GlobeGlyph = "\uE774";
+
+        return mediaViewModel switch
+        {
+            { Source: StorageFile file } => ToStorageItemGlyph(file),
+            { IsFromLibrary: true } => ToMediaTypeGlyph(mediaViewModel.MediaType),
+            _ => GlobeGlyph,
+        };
+    }
+}

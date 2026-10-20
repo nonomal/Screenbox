@@ -1,10 +1,9 @@
-﻿#nullable enable
-
 using CommunityToolkit.Diagnostics;
 using LibVLCSharp.Shared;
 
 namespace Screenbox.Core.Playback;
-public sealed class AudioTrack : MediaTrack
+
+public sealed partial class AudioTrack : MediaTrack
 {
     internal int VlcTrackId { get; }
 

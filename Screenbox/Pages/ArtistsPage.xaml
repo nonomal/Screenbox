@@ -1,21 +1,25 @@
-﻿<Page
+<Page
     x:Class="Screenbox.Pages.ArtistsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="using:Screenbox.Behaviors"
+    xmlns:converters="using:Screenbox.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:interactions="using:Screenbox.Controls.Interactions"
+    xmlns:flyouts="using:Screenbox.Flyouts"
+    xmlns:helpers="using:Screenbox.Helpers"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:strings="using:Screenbox.Strings"
-    xmlns:triggers="using:CommunityToolkit.WinUI"
+    xmlns:templates="using:Screenbox.Templates"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Controls/Templates/GridViewItemTemplates.xaml" />
+                <templates:GridViewItemTemplates />
+                <templates:GroupedViewTemplates />
             </ResourceDictionary.MergedDictionaries>
 
             <CollectionViewSource
@@ -23,32 +27,51 @@
                 IsSourceGrouped="True"
                 Source="{x:Bind ViewModel.GroupedArtists}" />
 
-            <DataTemplate x:Key="GroupHeaderTemplate">
-                <TextBlock Text="{Binding Key}" />
-            </DataTemplate>
-
-            <MenuFlyout x:Key="ArtistFlyout">
-                <MenuFlyoutItem Command="{Binding PlayArtistCommand}" Text="{Binding IsPlaying, Converter={StaticResource BoolToPlayPauseTextConverter}}">
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyphConverter}}" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
+            <flyouts:MediaMenuFlyout
+                x:Key="ArtistFlyout"
+                AddToQueueCommand="{x:Bind ViewModel.ContextArtist.AddArtistToQueueCommand, Mode=OneWay}"
+                ContextItem="{x:Bind ViewModel.ContextArtist, Mode=OneWay}"
+                PlayCommand="{x:Bind ViewModel.ContextArtist.PlayArtistCommand, Mode=OneWay}"
+                PlayNextCommand="{x:Bind ViewModel.ContextArtist.PlayArtistNextCommand, Mode=OneWay}">
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
                     Command="{x:Bind Common.OpenArtistCommand}"
-                    CommandParameter="{Binding}"
+                    CommandParameter="{x:Bind ViewModel.ContextArtist, Mode=OneWay}"
                     Icon="{ui:FontIcon Glyph=&#xE77B;}"
-                    Text="{strings:Resources Key=OpenArtist}" />
-            </MenuFlyout>
+                    Text="{x:Bind strings:Resources.ShowArtist}" />
+            </flyouts:MediaMenuFlyout>
         </ResourceDictionary>
     </Page.Resources>
 
     <interactivity:Interaction.Behaviors>
-        <interactions:AutoFocusBehavior />
+        <behaviors:AutoFocusBehavior />
     </interactivity:Interaction.Behaviors>
 
     <Grid>
-        <SemanticZoom>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Button
+            x:Name="ShufflePlayButton"
+            Grid.Row="0"
+            Margin="{StaticResource ContentPagePadding}"
+            AccessKey="{x:Bind strings:KeyboardResources.CommandShuffleAndPlayKey}"
+            AutomationProperties.Name="{x:Bind strings:Resources.ShuffleAndPlay}"
+            Command="{x:Bind ViewModel.ShuffleAndPlayCommand}"
+            Style="{StaticResource AccentButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <FontIcon
+                    Margin="{StaticResource IconButtonStandardIconMargin}"
+                    FontFamily="{StaticResource ScreenboxSymbolThemeFontFamily}"
+                    Glyph="{StaticResource ShuffleGlyph}"
+                    MirroredWhenRightToLeft="True" />
+                <TextBlock Margin="8,0,0,0" Text="{x:Bind strings:Resources.ShuffleAndPlay}" />
+            </StackPanel>
+        </Button>
+
+        <SemanticZoom Grid.Row="1">
             <SemanticZoom.ZoomedInView>
                 <GridView
                     x:Name="ArtistGridView"
@@ -62,10 +85,11 @@
                     ItemTemplate="{StaticResource ArtistGridViewItemTemplate}"
                     ItemsSource="{x:Bind ArtistsSource.View}"
                     Loaded="ArtistGridView_OnLoaded"
+                    ScrollViewer.IsHorizontalScrollChainingEnabled="False"
                     SelectionMode="None">
                     <GridView.GroupStyle>
                         <GroupStyle
-                            HeaderContainerStyle="{StaticResource GridViewHeaderItemSubtleButtonStyle}"
+                            HeaderContainerStyle="{StaticResource MediaGridViewHeaderItemStyle}"
                             HeaderTemplate="{StaticResource GroupHeaderTemplate}"
                             HidesIfEmpty="True" />
                     </GridView.GroupStyle>
@@ -73,8 +97,8 @@
                         <Border Height="{x:Bind Common.FooterBottomPaddingHeight, Mode=OneWay}" />
                     </GridView.Footer>
                     <interactivity:Interaction.Behaviors>
-                        <interactions:ListViewContextTriggerBehavior Flyout="{StaticResource ArtistFlyout}" />
-                        <interactions:BringIntoViewWithOffsetBehavior FromBottom="{x:Bind Common.FooterBottomPaddingHeight, Mode=OneWay}" />
+                        <behaviors:ListViewContextBehavior ContextItem="{x:Bind ViewModel.ContextArtist, Mode=TwoWay}" Flyout="{StaticResource ArtistFlyout}" />
+                        <behaviors:BringIntoViewWithOffsetBehavior FromBottom="{x:Bind Common.FooterBottomPaddingHeight, Mode=OneWay}" />
                     </interactivity:Interaction.Behaviors>
                 </GridView>
             </SemanticZoom.ZoomedInView>
@@ -98,6 +122,9 @@
                             <ItemsWrapGrid MaximumRowsOrColumns="8" Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
+                    <interactivity:Interaction.Behaviors>
+                        <behaviors:GroupingOverviewBehavior GroupType="" />
+                    </interactivity:Interaction.Behaviors>
                 </GridView>
             </SemanticZoom.ZoomedOutView>
         </SemanticZoom>
@@ -108,13 +135,11 @@
                 <VisualState x:Name="Compact" />
                 <VisualState x:Name="Minimal">
                     <VisualState.StateTriggers>
-                        <triggers:IsEqualStateTrigger Value="{x:Bind Common.NavigationViewDisplayMode, Mode=OneWay}">
-                            <triggers:IsEqualStateTrigger.To>
-                                <muxc:NavigationViewDisplayMode>Minimal</muxc:NavigationViewDisplayMode>
-                            </triggers:IsEqualStateTrigger.To>
-                        </triggers:IsEqualStateTrigger>
+                        <ui:IsEqualStateTrigger Value="{x:Bind Common.NavigationViewDisplayMode, Mode=OneWay}" To="{StaticResource MinimalNavigationViewDisplayMode}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="ShufflePlayButton.Margin" Value="{StaticResource ContentPageMinimalPadding}" />
+                        <!--<Setter Target="SortByButton.Margin" Value="{StaticResource ContentPageMinimalPadding}" />-->
                         <Setter Target="ArtistGridView.Padding" Value="{StaticResource GridViewContentPageMinimalPadding}" />
                         <Setter Target="GroupOverview.Padding" Value="{StaticResource ContentPageMinimalPadding}" />
                     </VisualState.Setters>

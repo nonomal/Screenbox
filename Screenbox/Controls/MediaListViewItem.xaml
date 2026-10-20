@@ -1,31 +1,30 @@
-﻿<UserControl
+<UserControl
     x:Class="Screenbox.Controls.MediaListViewItem"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:Screenbox.Controls.Animations"
+    xmlns:animations="using:Screenbox.Animations"
+    xmlns:behaviors="using:Screenbox.Behaviors"
+    xmlns:contract14Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,14)"
     xmlns:converters="using:Screenbox.Converters"
-    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:core="using:Screenbox.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:interactions="using:Screenbox.Controls.Interactions"
+    xmlns:helpers="using:Screenbox.Helpers"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:strings="using:Screenbox.Strings"
-    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewModels="using:Screenbox.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewModels:MediaViewModel}"
-    d:DesignHeight="300"
-    d:DesignWidth="400"
+    d:DesignHeight="44"
+    d:DesignWidth="736"
     DataContextChanged="OnDataContextChanged"
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <converters:DefaultStringConverter x:Key="GenreTextConverter" Default="{strings:Resources Key=UnknownGenre}" />
-
         <animations:AnimatedPlayingVisualSource x:Key="AnimatedPlayingVisualSource" Color_FFFFFF="{ThemeResource AccentFillColorCustomBrush}" />
     </UserControl.Resources>
 
-    <Grid XYFocusKeyboardNavigation="Disabled">
+    <Grid XYFocusKeyboardNavigation="Enabled">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="IndicatorColumn" Width="32" />
             <ColumnDefinition Width="32" />
@@ -44,12 +43,10 @@
             Grid.Column="0"
             Width="16"
             Height="16"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             AutoPlay="False"
             IsHitTestVisible="False"
             Source="{StaticResource AnimatedPlayingVisualSource}"
-            ToolTipService.ToolTip="{strings:Resources Key=IsPlaying}"
+            ToolTipService.ToolTip="{x:Bind strings:Resources.IsPlaying}"
             Visibility="Collapsed" />
 
         <TextBlock
@@ -61,101 +58,64 @@
             IsHitTestVisible="False"
             Opacity="{ThemeResource TextFillColorTertiaryOpacity}"
             Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{Binding TrackNumberText, FallbackValue=''}"
+            Text="{x:Bind ViewModel.TrackNumberText, Mode=OneWay, FallbackValue=''}"
             TextWrapping="NoWrap"
             Visibility="{x:Bind IsTrackNumberVisible}" />
+
         <FontIcon
             x:Name="ItemMediaTypeIcon"
             Grid.Column="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Glyph="{Binding Converter={StaticResource MediaGlyphConverter}}"
+            Glyph="{x:Bind converters:GlyphConverter.ToMediaGlyph(ViewModel), Mode=OneWay}"
             IsHitTestVisible="False"
             Visibility="{x:Bind IsIconVisible}" />
-        <Button
+
+        <HyperlinkButton
             x:Name="PlayButton"
             Grid.Column="1"
             Width="32"
             Height="32"
             Padding="0"
-            VerticalAlignment="Center"
-            BackgroundSizing="OuterBorderEdge"
+            contract14Present:AutomationProperties.AutomationControlType="Button"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatPlayPauseLabel(ViewModel.IsPlaying, ViewModel.Name), Mode=OneWay}"
             Command="{x:Bind PlayCommand, Mode=OneWay}"
-            CommandParameter="{Binding}"
-            ToolTipService.ToolTip="{Binding IsPlaying, Converter={StaticResource BoolToPlayPauseTextConverter}}"
+            CommandParameter="{x:Bind ViewModel, Mode=OneWay}"
+            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+            ToolTipService.ToolTip="{x:Bind helpers:ItemLabelHelper.GetPlayPauseLabel(ViewModel.IsPlaying), Mode=OneWay}"
             Visibility="Collapsed">
-            <FontIcon Glyph="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyphConverter}}" />
-            <Button.Resources>
-                <ResourceDictionary>
-                    <ResourceDictionary.ThemeDictionaries>
-                        <ResourceDictionary x:Key="Default">
-                            <StaticResource x:Key="ButtonBackground" ResourceKey="HyperlinkButtonBackground" />
-                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="HyperlinkButtonBackgroundPointerOver" />
-                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="HyperlinkButtonBackgroundPressed" />
-                            <StaticResource x:Key="ButtonForeground" ResourceKey="HyperlinkButtonForeground" />
-                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="HyperlinkButtonForegroundPointerOver" />
-                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="HyperlinkButtonForegroundPressed" />
-                            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="HyperlinkButtonBorderBrush" />
-                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="HyperlinkButtonBorderBrushPointerOver" />
-                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="HyperlinkButtonBorderBrushPressed" />
-                        </ResourceDictionary>
-                        <ResourceDictionary x:Key="Light">
-                            <StaticResource x:Key="ButtonBackground" ResourceKey="HyperlinkButtonBackground" />
-                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="HyperlinkButtonBackgroundPointerOver" />
-                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="HyperlinkButtonBackgroundPressed" />
-                            <StaticResource x:Key="ButtonForeground" ResourceKey="HyperlinkButtonForeground" />
-                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="HyperlinkButtonForegroundPointerOver" />
-                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="HyperlinkButtonForegroundPressed" />
-                            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="HyperlinkButtonBorderBrush" />
-                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="HyperlinkButtonBorderBrushPointerOver" />
-                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="HyperlinkButtonBorderBrushPressed" />
-                        </ResourceDictionary>
-                        <ResourceDictionary x:Key="HighContrast">
-                            <StaticResource x:Key="ButtonBackground" ResourceKey="HyperlinkButtonBackground" />
-                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="HyperlinkButtonBackgroundPointerOver" />
-                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="HyperlinkButtonBackgroundPressed" />
-                            <StaticResource x:Key="ButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
-                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="HyperlinkButtonForegroundPointerOver" />
-                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="HyperlinkButtonForegroundPressed" />
-                            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="HyperlinkButtonBorderBrush" />
-                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="HyperlinkButtonBorderBrushPointerOver" />
-                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="HyperlinkButtonBorderBrushPressed" />
-                        </ResourceDictionary>
-                    </ResourceDictionary.ThemeDictionaries>
-                </ResourceDictionary>
-            </Button.Resources>
-        </Button>
+            <FontIcon Glyph="{x:Bind converters:GlyphConverter.ToPlayPauseGlyph(ViewModel.IsPlaying), Mode=OneWay}" />
+        </HyperlinkButton>
 
         <TextBlock
             x:Name="TitleText"
             Grid.Column="2"
             Margin="8,0,0,0"
             VerticalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{Binding Name}"
-            TextWrapping="NoWrap">
+            FontSize="{StaticResource CaptionTextBlockFontSize}"
+            Text="{x:Bind ViewModel.Name, Mode=OneWay}"
+            TextTrimming="CharacterEllipsis">
             <interactivity:Interaction.Behaviors>
-                <interactions:OverflowTextToolTipBehavior />
+                <behaviors:OverflowTextToolTipBehavior />
             </interactivity:Interaction.Behaviors>
         </TextBlock>
 
         <HyperlinkButton
             x:Name="ArtistButton"
             Grid.Column="3"
-            Margin="4,0"
-            Padding="{StaticResource HyperlinkButtonMediaItemPadding}"
-            VerticalAlignment="Center"
+            Margin="2,0"
+            Padding="{StaticResource HyperlinkButtonUniformPadding}"
+            contract14Present:AutomationProperties.AutomationControlType="Button"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(strings:Resources.Artist, ArtistText.Text), Mode=OneWay}"
             Command="{x:Bind Common.OpenArtistCommand}"
-            CommandParameter="{Binding MainArtist, FallbackValue={x:Null}}"
+            CommandParameter="{x:Bind ViewModel.MainArtist, Mode=OneWay, FallbackValue={x:Null}}"
             Foreground="{ThemeResource TextFillColorPrimaryBrush}"
             Visibility="Collapsed">
             <TextBlock
                 x:Name="ArtistText"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{Binding MainArtist.Name, FallbackValue=''}"
-                TextWrapping="NoWrap">
+                FontSize="{StaticResource CaptionTextBlockFontSize}"
+                Text="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(ViewModel.MainArtist.Name, strings:Resources.UnknownArtist), Mode=OneWay}"
+                TextTrimming="CharacterEllipsis">
                 <interactivity:Interaction.Behaviors>
-                    <interactions:OverflowTextToolTipBehavior />
+                    <behaviors:OverflowTextToolTipBehavior />
                 </interactivity:Interaction.Behaviors>
             </TextBlock>
         </HyperlinkButton>
@@ -163,20 +123,21 @@
         <HyperlinkButton
             x:Name="AlbumButton"
             Grid.Column="4"
-            Margin="4,0"
-            Padding="{StaticResource HyperlinkButtonMediaItemPadding}"
-            VerticalAlignment="Center"
+            Margin="2,0"
+            Padding="{StaticResource HyperlinkButtonUniformPadding}"
+            contract14Present:AutomationProperties.AutomationControlType="Button"
+            AutomationProperties.Name="{x:Bind helpers:ItemLabelHelper.FormatAccessibleName(strings:Resources.PropertyAlbum, AlbumText.Text), Mode=OneWay}"
             Command="{x:Bind Common.OpenAlbumCommand}"
-            CommandParameter="{Binding Album}"
+            CommandParameter="{x:Bind ViewModel.Album, Mode=OneWay}"
             Foreground="{ThemeResource TextFillColorPrimaryBrush}"
             Visibility="Collapsed">
             <TextBlock
                 x:Name="AlbumText"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{Binding Album.Name, FallbackValue=''}"
-                TextWrapping="NoWrap">
+                FontSize="{StaticResource CaptionTextBlockFontSize}"
+                Text="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(ViewModel.Album.Name, strings:Resources.UnknownAlbum), Mode=OneWay}"
+                TextTrimming="CharacterEllipsis">
                 <interactivity:Interaction.Behaviors>
-                    <interactions:OverflowTextToolTipBehavior />
+                    <behaviors:OverflowTextToolTipBehavior />
                 </interactivity:Interaction.Behaviors>
             </TextBlock>
         </HyperlinkButton>
@@ -184,38 +145,39 @@
         <TextBlock
             x:Name="GenreText"
             Grid.Column="5"
-            Margin="4,0"
+            Margin="2,0"
             VerticalAlignment="Center"
+            FontSize="{StaticResource CaptionTextBlockFontSize}"
             Opacity="{ThemeResource TextFillColorTertiaryOpacity}"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{Binding MediaInfo.MusicProperties.Genre, Converter={StaticResource GenreTextConverter}}"
-            TextWrapping="NoWrap"
+            Text="{x:Bind helpers:ItemLabelHelper.GetValueOrFallback(ViewModel.MediaInfo.MusicProperties.Genre, strings:Resources.UnknownGenre), Mode=OneWay}"
+            TextTrimming="CharacterEllipsis"
             Visibility="Collapsed">
             <interactivity:Interaction.Behaviors>
-                <interactions:OverflowTextToolTipBehavior />
+                <behaviors:OverflowTextToolTipBehavior />
             </interactivity:Interaction.Behaviors>
         </TextBlock>
 
         <TextBlock
             x:Name="DurationText"
             Grid.Column="6"
-            Margin="0,0,16,0"
+            Margin="0,0,12,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
+            FontSize="{StaticResource CaptionTextBlockFontSize}"
             Opacity="{ThemeResource TextFillColorTertiaryOpacity}"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{Binding DurationText}"
-            TextWrapping="NoWrap" />
+            Text="{x:Bind core:Humanizer.ToDuration(ViewModel.Duration), Mode=OneWay}"
+            TextTrimming="CharacterEllipsis" />
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="ActivityStates">
                 <VisualState x:Name="ItemActive">
                     <VisualState.StateTriggers>
-                        <StateTrigger IsActive="{Binding IsMediaActive, Mode=OneWay, FallbackValue=False}" />
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsMediaActive, Mode=OneWay, FallbackValue=False}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="PlayingIndicator.Visibility" Value="Visible" />
                         <Setter Target="TrackNumberText.Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        <Setter Target="TrackNumberText.Opacity" Value="1" />
                         <Setter Target="ItemMediaTypeIcon.Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                         <Setter Target="TitleText.Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                         <Setter Target="ArtistButton.Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
@@ -226,15 +188,38 @@
                         <Setter Target="DurationText.Opacity" Value="1" />
                     </VisualState.Setters>
                 </VisualState>
+                <VisualState x:Name="Unavailable">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsAvailable, Mode=OneWay, Converter={StaticResource BoolNegationConverter}, FallbackValue=False}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="TrackNumberText.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="TrackNumberText.Opacity" Value="1" />
+                        <Setter Target="ItemMediaTypeIcon.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="TitleText.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="ArtistButton.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="AlbumButton.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="GenreText.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="GenreText.Opacity" Value="1" />
+                        <Setter Target="DurationText.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Setter Target="DurationText.Opacity" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
             </VisualStateGroup>
 
             <VisualStateGroup x:Name="PlayingStates">
                 <VisualState x:Name="Playing">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsPlaying, Mode=OneWay, FallbackValue=False}" />
+                    </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="PlayingIndicator.PlaybackRate" Value="1" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="NotPlaying">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsPlaying, Mode=OneWay, Converter={StaticResource BoolNegationConverter}, FallbackValue=True}" />
+                    </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="PlayingIndicator.PlaybackRate" Value="0" />
                     </VisualState.Setters>
@@ -267,14 +252,12 @@
                     <VisualState.Setters>
                         <Setter Target="RootGridTranslateTransform.X" Value="0" />
                         <Setter Target="PlayingIndicator.Opacity" Value="1" />
-                        <Setter Target="ItemMediaTypeIcon.Opacity" Value="1" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MultiSelectEnabled">
                     <VisualState.Setters>
-                        <Setter Target="RootGridTranslateTransform.X" Value="-32" />
+                        <Setter Target="RootGridTranslateTransform.X" Value="-28" />
                         <Setter Target="PlayingIndicator.Opacity" Value="0" />
-                        <Setter Target="ItemMediaTypeIcon.Opacity" Value="0" />
                     </VisualState.Setters>
                 </VisualState>
 
@@ -341,19 +324,7 @@
     </Grid>
 
     <interactivity:Interaction.Behaviors>
-        <interactions:AdaptiveLayoutBreakpointsBehavior x:Name="AdaptiveLayoutBehavior" Breakpoints="390,580,740" />
-        <interactions:MediaListViewItemBehavior />
-        <core:DataTriggerBehavior Binding="{Binding IsPlaying}" Value="True">
-            <core:GoToStateAction
-                StateName="Playing"
-                TargetObject="{x:Bind}"
-                UseTransitions="True" />
-        </core:DataTriggerBehavior>
-        <core:DataTriggerBehavior Binding="{Binding IsPlaying}" Value="False">
-            <core:GoToStateAction
-                StateName="NotPlaying"
-                TargetObject="{x:Bind}"
-                UseTransitions="True" />
-        </core:DataTriggerBehavior>
+        <behaviors:AdaptiveLayoutBreakpointsBehavior x:Name="AdaptiveLayoutBehavior" Breakpoints="390,580,740" />
+        <behaviors:MediaListViewItemBehavior />
     </interactivity:Interaction.Behaviors>
 </UserControl>

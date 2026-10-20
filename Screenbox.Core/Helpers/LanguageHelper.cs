@@ -1,6 +1,8 @@
-﻿using Windows.ApplicationModel.Resources;
+using System.Linq;
+using Windows.ApplicationModel.Resources;
 
 namespace Screenbox.Core.Helpers;
+
 internal static class LanguageHelper
 {
     private static readonly ResourceLoader Loader = ResourceLoader.GetForViewIndependentUse("Screenbox.Core/LanguageCodes");
@@ -11,5 +13,10 @@ internal static class LanguageHelper
         if (threeLetterTag.Length != 3) return false;
         twoLetterTag = Loader.GetString(threeLetterTag);
         return !string.IsNullOrEmpty(twoLetterTag);
+    }
+
+    public static string GetPreferredLanguage()
+    {
+        return Windows.System.UserProfile.GlobalizationPreferences.Languages.FirstOrDefault() ?? string.Empty;
     }
 }

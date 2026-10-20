@@ -1,182 +1,284 @@
-﻿#nullable enable
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using Screenbox.Core.Enums;
-using Screenbox.Core.Messages;
-using Screenbox.Core.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core.Enums;
+using Screenbox.Core.Factories;
+using Screenbox.Core.Messages;
+using Screenbox.Core.Models;
+using Screenbox.Core.Services;
+using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class PlaylistViewModel : ObservableRecipient
 {
-    public sealed partial class PlaylistViewModel : ObservableRecipient
+    public ObservableCollection<MediaViewModel> Items { get; } = new();
+
+    public double ItemsCount => Items.Count;    // For binding
+
+    [ObservableProperty] public partial string Name { get; set; } = string.Empty;
+    [ObservableProperty] public partial bool IsPlaying { get; set; }
+    [ObservableProperty] public partial object? Thumbnail { get; set; }
+    [ObservableProperty] public partial DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.Now;
+
+    public string Id => _id.ToString();
+
+    private Guid _id = Guid.NewGuid();
+
+    private readonly IPlaylistService _playlistService;
+    private readonly MediaViewModelFactory _mediaFactory;
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly DispatcherQueueTimer _playlistSaveTimer;
+    private readonly ILogger<PlaylistViewModel> _logger;
+
+    public PlaylistViewModel(
+        IPlaylistService playlistService,
+        MediaViewModelFactory mediaFactory,
+        ILogger<PlaylistViewModel> logger)
     {
-        public MediaListViewModel Playlist { get; }
+        _playlistService = playlistService;
+        _mediaFactory = mediaFactory;
+        _logger = logger;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _playlistSaveTimer = _dispatcherQueue.CreateTimer();
 
-        [ObservableProperty] private bool _hasItems;
-        [ObservableProperty] private bool _enableMultiSelect;
-        [ObservableProperty] private object? _selectedItem;
+        Items.CollectionChanged += Items_CollectionChanged;
+    }
 
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(PlayNextCommand))]
-        [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCommand))]
-        [NotifyCanExecuteChangedFor(nameof(MoveSelectedItemUpCommand))]
-        [NotifyCanExecuteChangedFor(nameof(MoveSelectedItemDownCommand))]
-        private int _selectionCount;
+    private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(ItemsCount));
 
-        private readonly IFilesService _filesService;
-        private readonly IResourceService _resourceService;
-
-        public PlaylistViewModel(MediaListViewModel playlist, IFilesService filesService, IResourceService resourceService)
+        // Ensures the playlist is up to date when items are reordered, as the ListViewBase
+        // reorder operation sends Remove/Add actions instead of a Move action.
+        if (e.Action == NotifyCollectionChangedAction.Add)
         {
-            Playlist = playlist;
-            _filesService = filesService;
-            _resourceService = resourceService;
-            _hasItems = playlist.Items.Count > 0;
-            Playlist.Items.CollectionChanged += ItemsOnCollectionChanged;
+            _playlistSaveTimer.Debounce(() => UpdatePlaylist(), TimeSpan.FromMilliseconds(100));
         }
+    }
 
-        public async Task EnqueuePlaylistAsync(IReadOnlyList<IStorageItem> items)
-        {
-            await Playlist.EnqueueAsync(items);
-        }
+    public Playlist ToPlaylist()
+    {
+        return new Playlist(0, Items);
+    }
 
-        private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            HasItems = Playlist.Items.Count > 0;
-            if (!HasItems)
-            {
-                EnableMultiSelect = false;
-            }
-        }
+    public void Load(PlaylistRecordDto persistentPlaylist)
+    {
+        if (!Guid.TryParse(persistentPlaylist.Id, out _id)) return;
+        Name = persistentPlaylist.DisplayName;
+        LastUpdated = persistentPlaylist.LastUpdated;
+        Items.Clear();
+        var itemSet = new HashSet<MediaViewModel>(persistentPlaylist.Items.Count);
 
-        partial void OnEnableMultiSelectChanged(bool value)
-        {
-            if (!value)
-                SelectedItem = null;
-        }
+        var albumFactory = new AlbumViewModelFactory();
+        var artistFactory = new ArtistViewModelFactory();
 
-        private static bool HasSelection(IList<object>? selectedItems) => selectedItems?.Count > 0;
-
-        private bool IsItemNotFirst(MediaViewModel item) => Playlist.Items.Count > 0 && Playlist.Items[0] != item;
-
-        private bool IsItemNotLast(MediaViewModel item) => Playlist.Items.Count > 0 && Playlist.Items[Playlist.Items.Count - 1] != item;
-
-        [RelayCommand(CanExecute = nameof(HasSelection))]
-        private void RemoveSelected(IList<object>? selectedItems)
-        {
-            if (selectedItems == null) return;
-            List<object> copy = selectedItems.ToList();
-            foreach (MediaViewModel item in copy)
-            {
-                Remove(item);
-            }
-        }
-
-        [RelayCommand]
-        private void Remove(MediaViewModel item)
-        {
-            if (Playlist.CurrentItem == item)
-            {
-                Playlist.CurrentItem = null;
-            }
-
-            Playlist.Items.Remove(item);
-        }
-
-        [RelayCommand]
-        private void PlaySingle(MediaViewModel media)
-        {
-            if (Playlist.CurrentItem == media && (media.IsPlaying ?? false))
-            {
-                Messenger.Send(new TogglePlayPauseMessage(false));
-            }
-            else
-            {
-                Messenger.Send(new PlayMediaMessage(media, true));
-            }
-        }
-
-        [RelayCommand(CanExecute = nameof(HasSelection))]
-        private void PlaySelectedNext(IList<object>? selectedItems)
-        {
-            if (selectedItems == null) return;
-            IEnumerable<object> reverse = selectedItems.Reverse();
-            foreach (MediaViewModel item in reverse)
-            {
-                PlayNext(item);
-            }
-        }
-
-        [RelayCommand]
-        private void PlayNext(MediaViewModel item)
-        {
-            Playlist.Items.Insert(Playlist.CurrentIndex + 1, new MediaViewModel(item));
-        }
-
-        [RelayCommand(CanExecute = nameof(HasSelection))]
-        private void MoveSelectedItemUp(IList<object>? selectedItems)
-        {
-            if (selectedItems == null || selectedItems.Count != 1) return;
-            MediaViewModel item = (MediaViewModel)selectedItems[0];
-            MoveItemUp(item);
-            selectedItems.Add(item);
-        }
-
-        [RelayCommand(CanExecute = nameof(IsItemNotFirst))]
-        private void MoveItemUp(MediaViewModel item)
-        {
-            int index = Playlist.Items.IndexOf(item);
-            if (index <= 0) return;
-            Playlist.Items.RemoveAt(index);
-            Playlist.Items.Insert(index - 1, item);
-        }
-
-        [RelayCommand(CanExecute = nameof(HasSelection))]
-        private void MoveSelectedItemDown(IList<object>? selectedItems)
-        {
-            if (selectedItems == null || selectedItems.Count != 1) return;
-            MediaViewModel item = (MediaViewModel)selectedItems[0];
-            MoveItemDown(item);
-            selectedItems.Add(item);
-        }
-
-        [RelayCommand(CanExecute = nameof(IsItemNotLast))]
-        private void MoveItemDown(MediaViewModel item)
-        {
-            int index = Playlist.Items.IndexOf(item);
-            if (index == -1 || index >= Playlist.Items.Count - 1) return;
-            Playlist.Items.RemoveAt(index);
-            Playlist.Items.Insert(index + 1, item);
-        }
-
-        [RelayCommand]
-        private void ClearSelection()
-        {
-            EnableMultiSelect = false;
-            SelectedItem = null;
-        }
-
-        [RelayCommand]
-        private async Task AddFilesAsync()
+        foreach (var item in persistentPlaylist.Items)
         {
             try
             {
-                IReadOnlyList<StorageFile>? files = await _filesService.PickMultipleFilesAsync();
-                if (files == null || files.Count == 0) return;
-                await Playlist.EnqueueAsync(files);
+                var vm = ToMediaViewModel(item, albumFactory, artistFactory);
+                Items.Add(itemSet.Add(vm) ? vm : new MediaViewModel(vm));
             }
-            catch (Exception e)
+            catch { }
+        }
+    }
+
+    public async Task SaveAsync()
+    {
+        LastUpdated = DateTimeOffset.Now;
+        var persistentPlaylist = ToPersistentPlaylist();
+        await _playlistService.SavePlaylistAsync(persistentPlaylist);
+    }
+
+    public async Task RenameAsync(string newDisplayName)
+    {
+        Name = newDisplayName;
+        await SaveAsync();
+    }
+
+    [RelayCommand]
+    public async Task AddItemsAsync(IReadOnlyList<MediaViewModel> items)
+    {
+        if (items.Count == 0) return;
+        foreach (var item in items)
+        {
+            Items.Add(Items.Contains(item) ? new MediaViewModel(item) : item);
+        }
+
+        //await SaveAsync();
+        Messenger.Send(new NotificationMessage(NotificationLevel.Success, NotificationKind.PlaylistItemsAdded, title: Name, numericValue: items.Count));
+    }
+
+    public async Task AddItemsAtIndexAsync(IReadOnlyList<MediaViewModel> items, int insertIndex = -1)
+    {
+        if (items.Count == 0) return;
+
+        foreach (var item in items)
+        {
+            if (insertIndex < 0 || insertIndex >= Items.Count)
             {
-                Messenger.Send(new ErrorMessage(
-                    _resourceService.GetString(ResourceName.FailedToOpenFilesNotificationTitle), e.Message));
+                Items.Add(Items.Contains(item) ? new MediaViewModel(item) : item);
             }
+            else
+            {
+                Items.Insert(insertIndex, Items.Contains(item) ? new MediaViewModel(item) : item);
+                insertIndex++;
+            }
+        }
+
+        //await SaveAsync();
+        Messenger.Send(new NotificationMessage(NotificationLevel.Success, NotificationKind.PlaylistItemsAdded, title: Name, numericValue: items.Count));
+    }
+
+    private PlaylistRecordDto ToPersistentPlaylist()
+    {
+        return new PlaylistRecordDto
+        {
+            Id = _id.ToString(),
+            DisplayName = Name,
+            LastUpdated = LastUpdated,
+            Items = Items.Select(ToRawMediaRecord).ToList()
+        };
+    }
+
+    private MediaViewModel ToMediaViewModel(RawMediaRecordDto record, AlbumViewModelFactory albumFactory, ArtistViewModelFactory artistFactory)
+    {
+        MediaViewModel media;
+        bool existing = false;
+        if (Uri.TryCreate(record.Path, UriKind.Absolute, out var uri))
+        {
+            if (_mediaFactory.TryGetOrCreate(uri, out var existingMedia))
+            {
+                media = existingMedia!;
+                existing = true;
+            }
+            else
+            {
+                media = _mediaFactory.GetOrCreate(uri);
+            }
+        }
+        else
+        {
+            media = _mediaFactory.Create(new Uri("about:blank"));
+            media.IsAvailable = false;
+        }
+
+        if (!existing)
+        {
+            if (!string.IsNullOrEmpty(record.Title))
+                media.Name = record.Title;
+
+            media.MediaInfo = CreateMediaInfo(record);
+
+            if (media.MediaType == MediaPlaybackType.Music)
+            {
+                // Placeholder album and artist for media list view.
+                // This path can happen when playlist is loaded before the music library is loaded
+                albumFactory.AddSong(media);
+                artistFactory.AddSong(media);
+                media.Album = albumFactory.SongsToAlbums[media];
+                media.Artists = artistFactory.SongsToArtists[media].ToArray();
+            }
+
+            if (record.DateAdded != default)
+            {
+                media.DateAdded = record.DateAdded.ToLocalTime();
+            }
+        }
+
+        return media;
+    }
+
+    private static RawMediaRecordDto ToRawMediaRecord(MediaViewModel media)
+    {
+        return new RawMediaRecordDto
+        {
+            Path = media.Location,
+            Title = media.Name,
+            MediaType = media.MediaType,
+            DateAdded = media.DateAdded,
+            Duration = media.Duration,
+            Year = media.MediaType == MediaPlaybackType.Music
+                ? media.MediaInfo.MusicProperties.Year
+                : media.MediaInfo.VideoProperties.Year,
+            Artist = media.MediaInfo.MusicProperties.Artist,
+            Album = media.MediaInfo.MusicProperties.Album,
+            AlbumArtist = media.MediaInfo.MusicProperties.AlbumArtist,
+            Composers = media.MediaInfo.MusicProperties.Composers,
+            Genre = media.MediaInfo.MusicProperties.Genre,
+            TrackNumber = media.MediaInfo.MusicProperties.TrackNumber,
+            Bitrate = media.MediaInfo.MusicProperties.Bitrate,
+            Subtitle = media.MediaInfo.VideoProperties.Subtitle,
+            Producers = media.MediaInfo.VideoProperties.Producers,
+            Writers = media.MediaInfo.VideoProperties.Writers,
+            Width = media.MediaInfo.VideoProperties.Width,
+            Height = media.MediaInfo.VideoProperties.Height,
+            VideoBitrate = media.MediaInfo.VideoProperties.Bitrate,
+        };
+    }
+
+    private static MediaInfo CreateMediaInfo(RawMediaRecordDto record)
+    {
+        if (record.MediaType == MediaPlaybackType.Music)
+        {
+            return new MediaInfo(new MusicInfo
+            {
+                Title = record.Title,
+                Artist = record.Artist,
+                Album = record.Album,
+                AlbumArtist = record.AlbumArtist,
+                Composers = record.Composers,
+                Genre = record.Genre,
+                TrackNumber = record.TrackNumber,
+                Year = record.Year,
+                Duration = record.Duration,
+                Bitrate = record.Bitrate,
+            });
+        }
+
+        if (record.MediaType == MediaPlaybackType.Video)
+        {
+            return new MediaInfo(new VideoInfo
+            {
+                Title = record.Title,
+                Subtitle = record.Subtitle,
+                Producers = record.Producers,
+                Writers = record.Writers,
+                Year = record.Year,
+                Duration = record.Duration,
+                Width = record.Width,
+                Height = record.Height,
+                Bitrate = record.VideoBitrate,
+            });
+        }
+
+        return new MediaInfo(record.MediaType, record.Title, record.Year, record.Duration);
+    }
+
+    private void UpdatePlaylist()
+    {
+        if (_dispatcherQueue.HasThreadAccess)
+        {
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    await SaveAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to persist playlist '{PlaylistId}'.", Id);
+                }
+            });
         }
     }
 }

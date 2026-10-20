@@ -1,13 +1,12 @@
-﻿#nullable enable
-
-using CommunityToolkit.Mvvm.Input;
-using Screenbox.Controls;
-using Screenbox.Core.ViewModels;
 using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+using Screenbox.Core.ViewModels;
+using Screenbox.Dialogs;
 
 namespace Screenbox.Commands;
-internal class ShowPropertiesCommand : IRelayCommand<MediaViewModel>
+
+internal sealed partial class ShowPropertiesCommand : IRelayCommand<MediaViewModel>
 {
     public event EventHandler? CanExecuteChanged;
 

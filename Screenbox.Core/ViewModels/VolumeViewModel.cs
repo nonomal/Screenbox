@@ -1,115 +1,138 @@
-﻿#nullable enable
-
 using System;
-using Windows.System;
-using Windows.UI.Input;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using Screenbox.Core.Contexts;
+using Screenbox.Core.Enums;
 using Screenbox.Core.Messages;
 using Screenbox.Core.Playback;
 using Screenbox.Core.Services;
+using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class VolumeViewModel : ObservableRecipient,
+    IRecipient<SettingChangedMessage<PlaybackSettingsContext, int>>,
+    IRecipient<ChangeVolumeRequestMessage>,
+    IRecipient<PropertyChangedMessage<IMediaPlayer?>>
 {
-    public sealed partial class VolumeViewModel : ObservableRecipient,
-        IRecipient<ChangeVolumeRequestMessage>,
-        IRecipient<SettingsChangedMessage>,
-        IRecipient<MediaPlayerChangedMessage>
+    [ObservableProperty] public partial int MaxVolume { get; set; }
+    [ObservableProperty] public partial int Volume { get; set; }
+    [ObservableProperty] public partial bool IsMute { get; set; }
+
+    private IMediaPlayer? MediaPlayer => _playerContext.MediaPlayer;
+
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly PlaybackSettingsContext _playbackSettings;
+    private readonly PlayerContext _playerContext;
+
+    public VolumeViewModel(PlaybackSettingsContext playbackSettings, PlayerContext playerContext)
     {
-        [ObservableProperty] private int _maxVolume;
-        [ObservableProperty] private int _volume;
-        [ObservableProperty] private bool _isMute;
-        [ObservableProperty] private string _volumeGlyph;
-        private IMediaPlayer? _mediaPlayer;
-        private readonly DispatcherQueue _dispatcherQueue;
-        private readonly ISettingsService _settingsService;
+        _playbackSettings = playbackSettings;
+        _playerContext = playerContext;
+        Volume = playbackSettings.Volume;
+        MaxVolume = playbackSettings.MaxVolume;
+        IsMute = Volume == 0;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        public VolumeViewModel(ISettingsService settingsService)
+        if (MediaPlayer != null)
         {
-            _settingsService = settingsService;
-            _volume = settingsService.PersistentVolume;
-            _maxVolume = settingsService.MaxVolume;
-            _isMute = _volume == 0;
-            _volumeGlyph = GetVolumeGlyph();
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-            // View model doesn't receive any messages
-            IsActive = true;
+            MediaPlayer.VolumeChanged += OnVolumeChanged;
+            MediaPlayer.IsMutedChanged += OnIsMutedChanged;
         }
 
-        public void Receive(MediaPlayerChangedMessage message)
+        Messenger.Register<SettingChangedMessage<PlaybackSettingsContext, int>>(this);
+        Messenger.Register<ChangeVolumeRequestMessage>(this);
+        Messenger.Register<PropertyChangedMessage<IMediaPlayer?>>(this);
+    }
+
+    public void Receive(SettingChangedMessage<PlaybackSettingsContext, int> message)
+    {
+        if (message.PropertyName == nameof(PlaybackSettingsContext.MaxVolume))
         {
-            _mediaPlayer = message.Value;
-            _mediaPlayer.VolumeChanged += OnVolumeChanged;
-            _mediaPlayer.IsMutedChanged += OnIsMutedChanged;
+            MaxVolume = message.NewValue;
+        }
+    }
+
+    public void Receive(PropertyChangedMessage<IMediaPlayer?> message)
+    {
+        if (message.Sender is not PlayerContext) return;
+
+        if (message.OldValue is { } oldPlayer)
+        {
+            oldPlayer.VolumeChanged -= OnVolumeChanged;
+            oldPlayer.IsMutedChanged -= OnIsMutedChanged;
         }
 
-        public void Receive(SettingsChangedMessage message)
+        if (MediaPlayer != null)
         {
-            if (message.SettingsName != nameof(SettingsPageViewModel.VolumeBoost)) return;
-            MaxVolume = _settingsService.MaxVolume;
+            MediaPlayer.VolumeChanged += OnVolumeChanged;
+            MediaPlayer.IsMutedChanged += OnIsMutedChanged;
         }
+    }
 
-        public void Receive(ChangeVolumeRequestMessage message)
-        {
-            Volume = message.IsOffset ?
-                Math.Clamp(Volume + message.Value, 0, MaxVolume) :
-                Math.Clamp(message.Value, 0, MaxVolume);
-            message.Reply(Volume);
-        }
+    public void Receive(ChangeVolumeRequestMessage message)
+    {
+        SetVolume(message.Value, message.IsOffset);
+        message.Reply(Volume);
+    }
 
-        public void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            PointerPoint? pointer = e.GetCurrentPoint((UIElement)sender);
-            int mouseWheelDelta = pointer.Properties.MouseWheelDelta;
-            int volumeChange = mouseWheelDelta > 0 ? 5 : -5;
-            Volume = Math.Clamp(Volume + volumeChange, 0, MaxVolume);
-        }
+    partial void OnVolumeChanged(int value)
+    {
+        if (MediaPlayer == null) return;
+        double newValue = value / 100d;
+        // bool stayMute = IsMute && newValue - MediaPlayer.Volume < 0.005;
+        MediaPlayer.Volume = newValue;
+        if (value > 0) IsMute = false;
+        _playbackSettings.Volume = value;
+    }
 
-        partial void OnVolumeChanged(int value)
-        {
-            if (_mediaPlayer == null) return;
-            double newValue = value / 100d;
-            // bool stayMute = IsMute && newValue - _mediaPlayer.Volume < 0.005;
-            _mediaPlayer.Volume = newValue;
-            if (value > 0) IsMute = false;
-            VolumeGlyph = GetVolumeGlyph();
-            _settingsService.PersistentVolume = value;
-        }
+    partial void OnIsMuteChanged(bool value)
+    {
+        if (MediaPlayer is null)
+            return;
 
-        partial void OnIsMuteChanged(bool value)
-        {
-            if (_mediaPlayer == null) return;
-            _mediaPlayer.IsMuted = value;
-            VolumeGlyph = GetVolumeGlyph();
-        }
+        MediaPlayer.IsMuted = value;
+    }
 
-        private void OnVolumeChanged(IMediaPlayer sender, object? args)
-        {
-            double normalizedVolume = Volume / 100d;
-            if (Math.Abs(sender.Volume - normalizedVolume) > 0.001)
-            {
-                _dispatcherQueue.TryEnqueue(() => sender.Volume = normalizedVolume);
-            }
-        }
+    /// <summary>
+    /// Handles toggling the mute state.
+    /// </summary>
+    public void HandleMuteToggleKey()
+    {
+        IsMute = !IsMute;
+        Messenger.Send(
+            new PlayerOsdUpdateMessage(
+                IsMute ? PlaybackCommandKind.Mute : PlaybackCommandKind.Volume,
+                value: Volume)
+            .ShowBadge());
+    }
 
-        private void OnIsMutedChanged(IMediaPlayer sender, object? args)
+    private void OnVolumeChanged(IMediaPlayer sender, object? args)
+    {
+        double normalizedVolume = Volume / 100d;
+        if (Math.Abs(sender.Volume - normalizedVolume) > 0.001)
         {
-            if (sender.IsMuted != IsMute)
-            {
-                _dispatcherQueue.TryEnqueue(() => sender.IsMuted = IsMute);
-            }
+            _dispatcherQueue.TryEnqueue(() => sender.Volume = normalizedVolume);
         }
+    }
 
-        private string GetVolumeGlyph()
+    private void OnIsMutedChanged(IMediaPlayer sender, object? args)
+    {
+        if (sender.IsMuted != IsMute)
         {
-            if (IsMute) return "\ue74f";
-            if (Volume < 25) return "\ue992";
-            if (Volume < 50) return "\ue993";
-            if (Volume < 75) return "\ue994";
-            return "\ue995";
+            _dispatcherQueue.TryEnqueue(() => sender.IsMuted = IsMute);
         }
+    }
+
+    /// <summary>
+    /// Sets the volume to a specified value or adjusts it by a given amount.
+    /// </summary>
+    /// <param name="value">The target volume to set or the offset amount to adjust.</param>
+    /// <param name="isOffset">If <see langword="true"/>, adjusts the current volume by the specified <paramref name="value"/>;
+    /// otherwise, sets the volume directly. The default value is <see langword="false"/>.</param>
+    public void SetVolume(int value, bool isOffset = false)
+    {
+        Volume = Math.Clamp(isOffset ? Volume + value : value, 0, MaxVolume);
     }
 }

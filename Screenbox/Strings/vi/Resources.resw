@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,26 +118,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FrameSavedNotificationTitle" xml:space="preserve">
-    <value>Đã lưu khung</value>
+    <value>Đã lưu khung hình</value>
   </data>
   <data name="CompactOverlayToggle_Variant0" xml:space="preserve">
     <value>Ảnh trong ảnh</value>
   </data>
   <data name="SaveCurrentFrame" xml:space="preserve">
-    <value>Lưu khung hiện tại</value>
+    <value>Lưu khung hình hiện tại</value>
   </data>
   <data name="Loop" xml:space="preserve">
-    <value>Lặp</value>
+    <value>Lặp lại</value>
   </data>
   <data name="PlaybackSpeed" xml:space="preserve">
-    <value>Tốc độ phát lại</value>
+    <value>Tốc độ phát</value>
   </data>
   <data name="VolumeChangeStatusMessage" xml:space="preserve">
     <value>Âm lượng {0:F0}%</value>
     <comment>#Format[Double volume]</comment>
   </data>
   <data name="FailedToSaveFrameNotificationTitle" xml:space="preserve">
-    <value>Không lưu được khung</value>
+    <value>Không lưu được khung hình</value>
+  </data>
+  <data name="TimeElapsed" xml:space="preserve">
+    <value>Thời gian đã phát</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Thời gian còn lại</value>
+  </data>
+  <data name="TimeLength" xml:space="preserve">
+    <value>Tổng thời lượng</value>
+  </data>
+  <data name="ChapterPluralized_One" xml:space="preserve">
+    <value>Chương</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="ChapterPluralized_Other" xml:space="preserve">
+    <value>Chương</value>
+    <comment>#Format[Plural Int]</comment>
   </data>
   <data name="ChapterName" xml:space="preserve">
     <value>Chương {0}</value>
@@ -166,6 +183,9 @@
   </data>
   <data name="Volume" xml:space="preserve">
     <value>Âm lượng</value>
+  </data>
+  <data name="VolumeSliderTooltip" xml:space="preserve">
+    <value>Điều chỉnh âm lượng</value>
   </data>
   <data name="Seek" xml:space="preserve">
     <value>Tua</value>
@@ -211,6 +231,21 @@
   <data name="AddToQueue" xml:space="preserve">
     <value>Thêm vào hàng đợi</value>
   </data>
+  <data name="Select" xml:space="preserve">
+    <value>Lựa chọn</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Chọn tất cả</value>
+  </data>
+  <data name="SelectAllToolTip" xml:space="preserve">
+    <value>Chọn tất cả các mục trong chế độ xem này</value>
+  </data>
+  <data name="SelectNone" xml:space="preserve">
+    <value>Không chọn</value>
+  </data>
+  <data name="SelectNoneToolTip" xml:space="preserve">
+    <value>Xóa lựa chọn của bạn</value>
+  </data>
   <data name="ClearSelection" xml:space="preserve">
     <value>Bỏ chọn</value>
   </data>
@@ -231,7 +266,7 @@
     <comment>Tool tip on which item is currently playing</comment>
   </data>
   <data name="Videos" xml:space="preserve">
-    <value>Videos</value>
+    <value>Video</value>
   </data>
   <data name="EmptyFolder" xml:space="preserve">
     <value>Thư mục này trống</value>
@@ -249,6 +284,9 @@
   </data>
   <data name="RestoreView" xml:space="preserve">
     <value>Khôi phục chế độ xem video</value>
+  </data>
+  <data name="MinimizeImmersiveView" xml:space="preserve">
+    <value>Giảm thiểu chế độ xem phong phú</value>
   </data>
   <data name="Cast" xml:space="preserve">
     <value>Truyền</value>
@@ -304,6 +342,9 @@
   <data name="SearchBoxPlaceholderText" xml:space="preserve">
     <value>Tìm kiếm</value>
   </data>
+  <data name="SearchBoxToolTip" xml:space="preserve">
+    <value>Tìm kiếm video, bài hát, album và hơn thế nữa</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Cài đặt</value>
   </data>
@@ -322,11 +363,17 @@
   <data name="OpenFileLocation" xml:space="preserve">
     <value>Mở vị trí tệp</value>
   </data>
+  <data name="OpenInFileExplorer" xml:space="preserve">
+    <value>Mở trong File Explorer</value>
+  </data>
+  <data name="OpenWith" xml:space="preserve">
+    <value>Mở với</value>
+  </data>
   <data name="PropertyAlbum" xml:space="preserve">
     <value>Album</value>
   </data>
   <data name="PropertyAlbumArtist" xml:space="preserve">
-    <value>Album artist</value>
+    <value>Nghệ sĩ</value>
   </data>
   <data name="PropertyBitRate" xml:space="preserve">
     <value>Tốc độ bit</value>
@@ -419,10 +466,13 @@
     <comment>#Format[String position]</comment>
   </data>
   <data name="Albums" xml:space="preserve">
-    <value>Albums</value>
+    <value>Danh sách phát</value>
   </data>
   <data name="Artists" xml:space="preserve">
     <value>Nghệ sĩ</value>
+  </data>
+  <data name="Song" xml:space="preserve">
+    <value>Bài hát</value>
   </data>
   <data name="Songs" xml:space="preserve">
     <value>Bài hát</value>
@@ -430,11 +480,17 @@
   <data name="OpenFilesToolTip" xml:space="preserve">
     <value>Duyệt tìm tập tin để phát</value>
   </data>
+  <data name="OpenFilesSecondaryToolTip" xml:space="preserve">
+    <value>Nhiều tùy chọn hơn để mở phương tiện</value>
+  </data>
   <data name="AddFiles" xml:space="preserve">
     <value>Thêm tệp</value>
   </data>
   <data name="AddFilesToPlayQueueToolTip" xml:space="preserve">
     <value>Duyệt tìm tệp để thêm vào hàng đợi phát</value>
+  </data>
+  <data name="AddFilesToPlayQueueSecondaryToolTip" xml:space="preserve">
+    <value>Nhiều tùy chọn hơn để thêm phương tiện vào hàng đợi phát</value>
   </data>
   <data name="AddMusicFolderToolTip" xml:space="preserve">
     <value>Thêm thư mục vào thư viện nhạc của bạn</value>
@@ -467,7 +523,7 @@
     <comment>#Format[Plural Int]</comment>
   </data>
   <data name="AlbumsCount_Other" xml:space="preserve">
-    <value>{0} albums</value>
+    <value>{0} album</value>
     <comment>#Format[Plural Int]</comment>
   </data>
   <data name="RunTime" xml:space="preserve">
@@ -558,7 +614,7 @@
     <comment>#Format[String name]</comment>
   </data>
   <data name="TrackIndex" xml:space="preserve">
-    <value>Track {0}</value>
+    <value>Kênh {0}</value>
     <comment>#Format[Int index]</comment>
   </data>
   <data name="AddSubtitle" xml:space="preserve">
@@ -585,6 +641,9 @@
   <data name="SettingsShowRecentHeader" xml:space="preserve">
     <value>Hiển thị gần đây</value>
   </data>
+  <data name="SettingsShowControlsHeader" xml:space="preserve">
+    <value>Hiển thị điều khiển khi tạm dừng</value>
+  </data>
   <data name="SettingsVideoLibraryLocationsHeader" xml:space="preserve">
     <value>Vị trí thư viện video</value>
   </data>
@@ -609,6 +668,18 @@
   <data name="SettingsVolumeBoostDescription" xml:space="preserve">
     <value>Cho phép âm lượng tối đa vượt quá 100%</value>
   </data>
+  <data name="SettingsRewindDescription" xml:space="preserve">
+    <value>Lượng thời gian bị tua lùi khi bạn tua lại</value>
+  </data>
+  <data name="SettingsFastForwardDescription" xml:space="preserve">
+    <value>Lượng thời gian bị bỏ qua khi bạn tua nhanh</value>
+  </data>
+  <data name="SettingsOnScreenControlsHeader" xml:space="preserve">
+    <value>Điều khiển trên màn hình</value>
+  </data>
+  <data name="SettingsOnScreenControlsDescription" xml:space="preserve">
+    <value>Chọn thành phần nào có thể xuất hiện trong điều khiển và điều chỉnh hành vi tự động ẩn</value>
+  </data>
   <data name="SettingsGesturesHeader" xml:space="preserve">
     <value>Cử chỉ</value>
   </data>
@@ -617,9 +688,6 @@
   </data>
   <data name="SettingsGestureVolume" xml:space="preserve">
     <value>Kéo theo chiều dọc để điều chỉnh âm lượng</value>
-  </data>
-  <data name="SettingsGestureTap" xml:space="preserve">
-    <value>Nhấn vào bất cứ đâu để phát hoặc tạm dừng</value>
   </data>
   <data name="AppFriendlyName" xml:space="preserve">
     <value>Trình Phát Phương Tiện Screenbox</value>
@@ -649,11 +717,26 @@
   <data name="SubtitleAddedNotificationTitle" xml:space="preserve">
     <value>Đã thêm phụ đề</value>
   </data>
+  <data name="PlaylistCreatedNotificationTitle" xml:space="preserve">
+    <value>Danh sách phát "{0}" đã được tạo</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistDeletedNotificationTitle" xml:space="preserve">
+    <value>Danh sách phát "{0}" đã được xóa</value>
+    <comment>#Format[String name]</comment>
+  </data>
+  <data name="PlaylistRenamedNotificationTitle" xml:space="preserve">
+    <value>Danh sách phát đã đổi tên thành "{0}"</value>
+    <comment>#Format[String name]</comment>
+  </data>
   <data name="CriticalError" xml:space="preserve">
     <value>Lỗi nghiêm trọng</value>
   </data>
   <data name="CriticalErrorDirect3D11NotAvailable" xml:space="preserve">
     <value>Không có trình kết xuất tương thích nào có sẵn. Hãy đảm bảo Direct3D 11 có sẵn trên thiết bị của bạn.</value>
+  </data>
+  <data name="CriticalErrorMoreInformation" xml:space="preserve">
+    <value>Để biết thêm thông tin về vấn đề này và các bản sửa lỗi có thể, hãy truy cập</value>
   </data>
   <data name="FailedToOpenFilesNotificationTitle" xml:space="preserve">
     <value>Không thể mở tập tin</value>
@@ -689,6 +772,9 @@
   <data name="SettingsCategoryAdvanced" xml:space="preserve">
     <value>Nâng cao</value>
   </data>
+  <data name="SettingsCategoryPrivacy" xml:space="preserve">
+    <value>Riêng tư</value>
+  </data>
   <data name="SettingsAdvancedModeHeader" xml:space="preserve">
     <value>Chế độ nâng cao</value>
   </data>
@@ -722,6 +808,9 @@
   <data name="License" xml:space="preserve">
     <value>Giấy phép</value>
   </data>
+  <data name="ThirdPartyNotices" xml:space="preserve">
+    <value>Xác nhận phần mềm của bên thứ ba</value>
+  </data>
   <data name="HyperlinkTranslate" xml:space="preserve">
     <value>Hỗ trợ phiên dịch</value>
   </data>
@@ -729,7 +818,7 @@
     <value>Tùy chọn</value>
   </data>
   <data name="TimingOffset" xml:space="preserve">
-    <value>Bù thời gian</value>
+    <value>Thời gian trễ</value>
   </data>
   <data name="PropertyComposers" xml:space="preserve">
     <value>Nhà soạn nhạc</value>
@@ -759,21 +848,346 @@
     <value>Quản lý cài đặt lập chỉ mục hệ thống</value>
   </data>
   <data name="SetArguments" xml:space="preserve">
-    <value>Set arguments</value>
+    <value>Đặt đối số</value>
   </data>
   <data name="SettingsSearchRemovableStorageHeader" xml:space="preserve">
-    <value>Search removable storage</value>
+    <value>Tìm kiếm bộ nhớ di động</value>
   </data>
   <data name="SettingsSearchRemovableStorageDescription" xml:space="preserve">
-    <value>Include media from storage devices like USB sticks in your libraries</value>
+    <value>Đưa phương tiện từ các thiết bị lưu trữ như thẻ nhớ USB vào thư viện của bạn</value>
   </data>
   <data name="ActiveArguments" xml:space="preserve">
-    <value>Active arguments</value>
+    <value>Đối số hoạt động</value>
   </data>
   <data name="SettingsUseMultipleInstancesHeader" xml:space="preserve">
-    <value>Allow multiple instances</value>
+    <value>Cho phép nhiều tiến trình</value>
   </data>
   <data name="SettingsUseMultipleInstancesDescription" xml:space="preserve">
-    <value>Always open media files in a new instance</value>
+    <value>Luôn mở các tệp phương tiện trong một tiến trình mới</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Xếp theo</value>
+  </data>
+  <data name="SortByAutomationName" xml:space="preserve">
+    <value>Sắp xếp theo tùy chọn {0} đã chọn</value>
+    <comment>#Format[String sortBy]</comment>
+  </data>
+  <data name="Artist" xml:space="preserve">
+    <value>Nghệ sĩ</value>
+  </data>
+  <data name="ReleasedYear" xml:space="preserve">
+    <value>Năm phát hành</value>
+  </data>
+  <data name="SettingsAudioVisualHeader" xml:space="preserve">
+    <value>Minh họa âm thanh</value>
+  </data>
+  <data name="GetLivelyApp" xml:space="preserve">
+    <value>Lấy Từ Lively Wallpaper</value>
+  </data>
+  <data name="GetLivelyVisuals" xml:space="preserve">
+    <value>Tải minh họa trên GitHub</value>
+  </data>
+  <data name="VisualizerOptionsToolTip" xml:space="preserve">
+    <value>Tùy chọn minh họa âm thanh</value>
+  </data>
+  <data name="Visuals" xml:space="preserve">
+    <value>Minh họa</value>
+  </data>
+  <data name="BrowseFiles" xml:space="preserve">
+    <value>Duyệt tập tin</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Mặc định</value>
+  </data>
+  <data name="SettingsAudioVisualDescription" xml:space="preserve">
+    <value>Chọn phông nền để mang đến cho âm thanh của bạn sự tinh tế về mặt hình ảnh trong chế độ xem sống động</value>
+  </data>
+  <data name="PoweredByLivelyWallpaper" xml:space="preserve">
+    <value>Được cung cấp bởi Lively Wallpaper</value>
+  </data>
+  <data name="SettingsImportVisualsHeader" xml:space="preserve">
+    <value>Nhập minh họa</value>
+  </data>
+  <data name="SettingsImportVisualsDescription" xml:space="preserve">
+    <value>Nhận thêm ảnh qua ứng dụng Lively Wallpaper hoặc tải xuống từ GitHub</value>
+  </data>
+  <data name="DateAdded" xml:space="preserve">
+    <value>Ngày thêm</value>
+  </data>
+  <data name="Media" xml:space="preserve">
+    <value>Phương tiện</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>Tệp</value>
+  </data>
+  <data name="MusicLibrary" xml:space="preserve">
+    <value>Nhạc</value>
+  </data>
+  <data name="VideoLibrary" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="ShowAlbum" xml:space="preserve">
+    <value>Hiển thị album</value>
+  </data>
+  <data name="ShowArtist" xml:space="preserve">
+    <value>Hiển thị nghệ sĩ</value>
+  </data>
+  <data name="FailedToLoadVisualNotificationTitle" xml:space="preserve">
+    <value>Không tải được minh họa</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderDescription" xml:space="preserve">
+    <value>Khi mở một tệp, tự động thêm tất cả các tệp khác trong thư mục vào hàng đợi phát.</value>
+  </data>
+  <data name="SettingsEnqueueAllFilesInFolderHeader" xml:space="preserve">
+    <value>Thêm tất cả các tập tin trong thư mục vào hàng đợi</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Dùng cài đặt hệ thống</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Tối</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Sáng</value>
+  </data>
+  <data name="SettingsThemeSelectionDescription" xml:space="preserve">
+    <value>Thay đổi bảng màu tổng thể của ứng dụng</value>
+  </data>
+  <data name="SettingsThemeSelectionHeader" xml:space="preserve">
+    <value>Giao diện ứng dụng</value>
+  </data>
+  <data name="SettingsCategoryPersonalization" xml:space="preserve">
+    <value>Cá nhân hóa</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionHeader" xml:space="preserve">
+    <value>Luôn tiếp tục từ vị trí cuối cùng</value>
+  </data>
+  <data name="SettingsRestorePlaybackPositionDescription" xml:space="preserve">
+    <value>Tiếp tục phát từ nơi bạn dừng cuối cùng khi mở tệp</value>
+  </data>
+  <data name="SettingsVideoUpscalingHeader" xml:space="preserve">
+    <value>Cách tăng độ phân giải video</value>
+  </data>
+  <data name="SettingsVideoUpscalingDescription" xml:space="preserve">
+    <value>Super resolution upscaling requires compatible hardware and driver support.</value>
+  </data>
+  <data name="VideoUpscalingLinear" xml:space="preserve">
+    <value>Song tuyến tính</value>
+  </data>
+  <data name="VideoUpscalingPoint" xml:space="preserve">
+    <value>Điểm</value>
+  </data>
+  <data name="VideoUpscalingSuper" xml:space="preserve">
+    <value>Siêu phân giải</value>
+  </data>
+  <data name="SettingsShowChaptersHeader" xml:space="preserve">
+    <value>Hiển thị tên chương khi có sẵn</value>
+  </data>
+  <data name="SettingsOnScreenControlsHideDelayHeader" xml:space="preserve">
+    <value>Loại bỏ các điều khiển sau khoảng thời gian này</value>
+  </data>
+  <data name="SecondsCount_One" xml:space="preserve">
+    <value>{0} giây</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SecondsCount_Other" xml:space="preserve">
+    <value>{0} giây</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsLanguageSelectionHeader" xml:space="preserve">
+    <value>Ngôn ngữ ứng dụng</value>
+  </data>
+  <data name="SettingsLanguageSelectionDescription" xml:space="preserve">
+    <value>Thay đổi ngôn ngữ hiển thị của ứng dụng</value>
+  </data>
+  <data name="LanguageSystemDefault" xml:space="preserve">
+    <value>Dùng ngôn ngữ hệ thống</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>Không có kết quả cho "{0}"</value>
+    <comment>#Format[String searchQuery]</comment>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Thư mục</value>
+  </data>
+  <data name="SettingsGestureTapHeader" xml:space="preserve">
+    <value>Vỗ nhẹ</value>
+  </data>
+  <data name="SettingsGestureSwipeUpHeader" xml:space="preserve">
+    <value>Vuốt lên</value>
+  </data>
+  <data name="SettingsGestureSwipeDownHeader" xml:space="preserve">
+    <value>Vuốt xuống</value>
+  </data>
+  <data name="SettingsGestureSwipeLeftHeader" xml:space="preserve">
+    <value>Vuốt sang trái</value>
+  </data>
+  <data name="SettingsGestureSwipeRightHeader" xml:space="preserve">
+    <value>Vuốt sang phải</value>
+  </data>
+  <data name="SettingsGesturePressAndHoldHeader" xml:space="preserve">
+    <value>Bật nhấn và giữ để tăng tốc độ phát lại</value>
+  </data>
+  <data name="PlaybackActionKindNone" xml:space="preserve">
+    <value>Không có gì</value>
+  </data>
+  <data name="PlayPause" xml:space="preserve">
+    <value>Phát/tạm dừng</value>
+  </data>
+  <data name="Rewind" xml:space="preserve">
+    <value>Tua lại</value>
+  </data>
+  <data name="FastForward" xml:space="preserve">
+    <value>Chuyển tiếp nhanh</value>
+  </data>
+  <data name="DecreaseVolume" xml:space="preserve">
+    <value>Giảm âm lượng</value>
+  </data>
+  <data name="IncreaseVolume" xml:space="preserve">
+    <value>Tăng âm lượng</value>
+  </data>
+  <data name="DecreaseRate" xml:space="preserve">
+    <value>Giảm tốc độ</value>
+  </data>
+  <data name="IncreaseRate" xml:space="preserve">
+    <value>Tăng tốc độ</value>
+  </data>
+  <data name="NextTrack" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="PreviousTrack" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="NextChapter" xml:space="preserve">
+    <value>Next chapter</value>
+  </data>
+  <data name="PreviousChapter" xml:space="preserve">
+    <value>Previous chapter</value>
+  </data>
+  <data name="AddToPlaylist" xml:space="preserve">
+    <value>Thêm vào danh sách phát</value>
+  </data>
+  <data name="CreateNewPlaylist" xml:space="preserve">
+    <value>Tạo danh sách phát mới</value>
+  </data>
+  <data name="NewPlaylist" xml:space="preserve">
+    <value>Danh sách phát mới</value>
+  </data>
+  <data name="ImportPlaylist" xml:space="preserve">
+    <value>Nhập danh sách phát</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Xuất</value>
+  </data>
+  <data name="SelectedItem" xml:space="preserve">
+    <value>Mục đã chọn</value>
+  </data>
+  <data name="SelectedItems" xml:space="preserve">
+    <value>Các mục đã chọn</value>
+  </data>
+  <data name="NoPlaylists" xml:space="preserve">
+    <value>Không có danh sách nhạc</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Tạo</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="NewPlaylistDefaultName" xml:space="preserve">
+    <value>Danh sách phát không có tiêu đề</value>
+  </data>
+  <data name="CreatePlaylistPlaceholder" xml:space="preserve">
+    <value>Nhập tên cho danh sách phát</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>Danh sách phát</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Đổi tên</value>
+  </data>
+  <data name="RenamePlaylistPlaceholder" xml:space="preserve">
+    <value>Nhập tên mới cho danh sách phát này</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>Đổi tên danh sách phát</value>
+  </data>
+  <data name="DeletePlaylist" xml:space="preserve">
+    <value>Xóa các danh sách phát</value>
+  </data>
+  <data name="DeletePlaylistConfirmation" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa danh sách phát '{0}' không? Bạn không thể hoàn tác thao tác này.</value>
+    <comment>#Format[String playlistName]</comment>
+  </data>
+  <data name="PlaylistsSelected_One" xml:space="preserve">
+    <value>Danh sách phát {0} đã được chọn</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="PlaylistsSelected_Other" xml:space="preserve">
+    <value>Danh sách phát {0} đã được chọn</value>
+    <comment>#Format[Plural Int]</comment>
+  </data>
+  <data name="SettingsSavePlaybackPositionHeader" xml:space="preserve">
+    <value>Lịch sử vị trí phát lại</value>
+  </data>
+  <data name="SettingsSavePlaybackPositionDescription" xml:space="preserve">
+    <value>Lưu lịch sử vị trí phát lại trên thiết bị này để có thể nhanh chóng tiếp tục phiên phát</value>
+  </data>
+  <data name="SettingsClearPlaybackPositionHeader" xml:space="preserve">
+    <value>Xóa lịch sử vị trí phát lại của thiết bị</value>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_One" xml:space="preserve">
+    <value>Đã thêm mục {0} vào danh sách phát "{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="PlaylistItemsAddedNotificationTitle_Other" xml:space="preserve">
+    <value>Đã thêm {0} mục vào danh sách phát "{1}"</value>
+    <comment>#Format[Plural count, String name]</comment>
+  </data>
+  <data name="NoPlaylistsPanelHeader" xml:space="preserve">
+    <value>Bạn không có danh sách phát nào</value>
+  </data>
+  <data name="NoPlaylistsPanelSubtext" xml:space="preserve">
+    <value>Hãy tạo danh sách phát đầu tiên để sắp xếp các video và nhạc yêu thích của bạn.</value>
+  </data>
+  <data name="NoPlaylistItems" xml:space="preserve">
+    <value>Danh sách phát này hiện không có mục nào.</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationHeader" xml:space="preserve">
+    <value>Ảnh chụp khung hình sẽ được lưu vào</value>
+  </data>
+  <data name="SettingsFrameCaptureLocationDescription" xml:space="preserve">
+    <value>Vị trí ảnh chụp khung hình</value>
+  </data>
+  <data name="ChangeFolder" xml:space="preserve">
+    <value>Thay đổi thư mục</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Thay đổi</value>
+  </data>
+  <data name="AspectRatioStatusMessage" xml:space="preserve">
+    <value>Aspect ratio: {0}</value>
+    <comment>#Format[String ratio]</comment>
+  </data>
+  <data name="AudioOptions" xml:space="preserve">
+    <value>Audio options</value>
+  </data>
+  <data name="SubtitleOptions" xml:space="preserve">
+    <value>Subtitle options</value>
+  </data>
+  <data name="DecreaseValue" xml:space="preserve">
+    <value>Decrease {0}</value>
+    <comment>#Format[String value]</comment>
+  </data>
+  <data name="IncreaseValue" xml:space="preserve">
+    <value>Increase {0}</value>
+    <comment>#Format[String value]</comment>
   </data>
 </root>
+

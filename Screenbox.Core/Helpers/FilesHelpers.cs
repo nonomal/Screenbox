@@ -1,15 +1,18 @@
-﻿using Screenbox.Core.Enums;
+using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
+using Screenbox.Core.Enums;
 using Windows.Storage;
 
 namespace Screenbox.Core.Helpers;
+
 public static class FilesHelpers
 {
     public static ImmutableArray<string> SupportedAudioFormats { get; } =
-        ImmutableArray.Create(".mp3", ".wav", ".wma", ".aac", ".mid", ".midi", ".mpa", ".ogg", ".oga", ".opus", ".weba", ".flac", ".m4a", ".wv", ".wvc", ".aiff", ".aif", ".aifc");
+        ImmutableArray.Create(".mp3", ".wav", ".wma", ".aac", ".mid", ".midi", ".mpa", ".ogg", ".oga", ".opus", ".weba", ".flac", ".m4a", ".m4b", ".wv", ".wvc", ".aiff", ".aif", ".aifc", ".ac3", ".ape", ".dts", ".nist", ".ra", ".spx");
 
     public static ImmutableArray<string> SupportedVideoFormats { get; } =
-        ImmutableArray.Create(".avi", ".mp4", ".wmv", ".mov", ".mkv", ".flv", ".3gp", ".3g2", ".m4v", ".mpg", ".mpeg", ".webm");
+        ImmutableArray.Create(".avi", ".mp4", ".wmv", ".mov", ".mkv", ".flv", ".3gp", ".3g2", ".m4v", ".mpg", ".mpeg", ".webm", ".rm", ".rmvb", ".asf", ".wm", ".wtv", ".f4v", ".swf", ".vob", ".mxf", ".ogv", ".ogm");
 
     public static ImmutableArray<string> SupportedPlaylistFormats { get; } =
         ImmutableArray.Create(".m3u8", ".m3u", ".ts", ".mts", ".m2ts", ".m2t");
@@ -32,5 +35,21 @@ public static class FilesHelpers
         if (file.ContentType.StartsWith("image")) return MediaPlaybackType.Image;
         if (file.IsSupportedPlaylist()) return MediaPlaybackType.Playlist;
         return MediaPlaybackType.Unknown;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve a <see cref="StorageFile"/> from a file-system path.
+    /// Returns <see langword="null"/> when the file is inaccessible or does not exist.
+    /// </summary>
+    public static async Task<StorageFile?> TryGetFileFromPathAsync(string path)
+    {
+        try
+        {
+            return await StorageFile.GetFileFromPathAsync(path);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 }

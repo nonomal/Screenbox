@@ -1,0 +1,103 @@
+using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
+using Screenbox.Core.Helpers;
+using Screenbox.Core.Services;
+using Screenbox.Core.ViewModels;
+using Windows.Storage;
+using Windows.System;
+
+namespace Screenbox.Commands;
+
+/// <summary>
+/// Represents a command that opens a media file with an external application
+/// using the system Open With dialog.
+/// </summary>
+internal sealed partial class OpenWithCommand : IRelayCommand<MediaViewModel>
+{
+    public event EventHandler? CanExecuteChanged;
+
+    private readonly AsyncRelayCommand<MediaViewModel> _asyncCommand;
+    private readonly ILogger<OpenWithCommand> _logger;
+
+    public OpenWithCommand()
+    {
+        _logger = DefaultLogging.CreateLogger<OpenWithCommand>();
+        _asyncCommand = new AsyncRelayCommand<MediaViewModel>(OpenWithAsync);
+        _asyncCommand.CanExecuteChanged += (_, _) => NotifyCanExecuteChanged();
+    }
+
+    /// <inheritdoc/>
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    public bool CanExecute(MediaViewModel? parameter)
+    {
+        return parameter?.Source is StorageFile
+            || (parameter?.IsFromLibrary == true
+            && _asyncCommand.CanExecute(parameter));
+    }
+
+    /// <inheritdoc/>
+    public bool CanExecute(object? parameter)
+    {
+        return parameter is MediaViewModel media && CanExecute(media);
+    }
+
+    /// <inheritdoc/>
+    public void Execute(MediaViewModel? parameter)
+    {
+        if (parameter is null) return;
+        _asyncCommand.Execute(parameter);
+    }
+
+    /// <inheritdoc/>
+    public void Execute(object? parameter)
+    {
+        if (parameter is MediaViewModel media)
+        {
+            Execute(media);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void NotifyCanExecuteChanged()
+    {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    [DynamicWindowsRuntimeCast(typeof(StorageFile))]
+    private async Task OpenWithAsync(MediaViewModel? parameter)
+    {
+        if (parameter == null)
+            return;
+
+        if (parameter.Source is not StorageFile file)
+        {
+            var filesService = Ioc.Default.GetRequiredService<IFilesService>();
+            await parameter.LoadDetailsAsync(filesService);
+            if (parameter.Source is not StorageFile loadedFile)
+                return;
+
+            file = loadedFile;
+        }
+
+        try
+        {
+            LauncherOptions options = new()
+            {
+                DisplayApplicationPicker = true
+            };
+
+            bool success = await Launcher.LaunchFileAsync(file, options);
+            if (!success)
+            {
+                _logger.LogWarning("Failed to open file with an external application because no application was selected or available.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open file of type '{FileType}' with an external application.", file.FileType);
+        }
+    }
+}

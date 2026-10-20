@@ -1,105 +1,63 @@
-﻿#nullable enable
-
+using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using Screenbox.Core.Contexts;
 using Screenbox.Core.Enums;
 using Screenbox.Core.Messages;
 using Screenbox.Core.Models;
-using Screenbox.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Windows.Storage;
 using Windows.System;
 
-namespace Screenbox.Core.ViewModels
+namespace Screenbox.Core.ViewModels;
+
+public sealed partial class MusicPageViewModel : ObservableRecipient,
+    IRecipient<PropertyChangedMessage<MusicLibrary>>
 {
-    public sealed partial class MusicPageViewModel : ObservableRecipient
+    [ObservableProperty] public partial bool HasContent { get; set; }
+
+    /// <summary>Gets a value indicating whether the Music library is available, used to enable the add-folder command.</summary>
+    public bool LibraryLoaded => _libraryContext.MusicStorageLibrary != null;
+
+    private readonly LibraryContext _libraryContext;
+    private readonly DispatcherQueue _dispatcherQueue;
+
+    public MusicPageViewModel(LibraryContext libraryContext)
     {
-        [ObservableProperty] private bool _isLoading;
+        _libraryContext = libraryContext;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        HasContent = true;
 
-        [ObservableProperty] private bool _hasContent;
+        Messenger.Register<PropertyChangedMessage<MusicLibrary>>(this);
+    }
 
-        public int Count => _songs.Count;
+    public void Receive(PropertyChangedMessage<MusicLibrary> message)
+    {
+        _dispatcherQueue.TryEnqueue(UpdateSongs);
+    }
 
-        private bool HasSongs => _songs.Count > 0;
+    public void UpdateSongs()
+    {
+        HasContent = _libraryContext.Music.Songs.Count > 0 || _libraryContext.IsLoadingMusic;
+        AddFolderCommand.NotifyCanExecuteChanged();
+    }
 
-        private bool LibraryLoaded => _libraryService.MusicLibrary != null;
-
-        private readonly ILibraryService _libraryService;
-        private readonly IResourceService _resourceService;
-        private readonly DispatcherQueue _dispatcherQueue;
-        private readonly DispatcherQueueTimer _timer;
-        private List<MediaViewModel> _songs;
-
-        public MusicPageViewModel(ILibraryService libraryService, IResourceService resourceService)
+    /// <summary>
+    /// Requests adding a new folder to the Music library.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(LibraryLoaded))]
+    private async Task AddFolderAsync()
+    {
+        try
         {
-            _libraryService = libraryService;
-            _resourceService = resourceService;
-            _libraryService.MusicLibraryContentChanged += OnMusicLibraryContentChanged;
-            _songs = new List<MediaViewModel>();
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _timer = _dispatcherQueue.CreateTimer();
-            _hasContent = true;
+            await _libraryContext.MusicStorageLibrary?.RequestAddFolderAsync();
         }
-
-        public void UpdateSongs()
+        catch (Exception e)
         {
-            MusicLibraryFetchResult musicLibrary = _libraryService.GetMusicFetchResult();
-            _songs = new List<MediaViewModel>(musicLibrary.Songs);
-            IsLoading = _libraryService.IsLoadingMusic;
-            HasContent = _songs.Count > 0 || IsLoading;
-            AddFolderCommand.NotifyCanExecuteChanged();
-            ShuffleAndPlayCommand.NotifyCanExecuteChanged();
-
-            if (IsLoading)
-            {
-                _timer.Debounce(UpdateSongs, TimeSpan.FromSeconds(5));
-            }
-            else
-            {
-                _timer.Stop();
-            }
-        }
-
-        private void OnMusicLibraryContentChanged(ILibraryService sender, object args)
-        {
-            _dispatcherQueue.TryEnqueue(UpdateSongs);
-        }
-
-        [RelayCommand(CanExecute = nameof(HasSongs))]
-        private void ShuffleAndPlay()
-        {
-            if (_songs.Count == 0) return;
-            Random rnd = new();
-            List<MediaViewModel> shuffledList = _songs.OrderBy(_ => rnd.Next()).ToList();
-            Messenger.Send(new ClearPlaylistMessage());
-            Messenger.Send(new QueuePlaylistMessage(shuffledList));
-            Messenger.Send(new PlayMediaMessage(shuffledList[0], true));
-        }
-
-        [RelayCommand(CanExecute = nameof(LibraryLoaded))]
-        private async Task AddFolder()
-        {
-            StorageFolder? addedFolder;
-            try
-            {
-                addedFolder = await _libraryService.MusicLibrary?.RequestAddFolderAsync();
-            }
-            catch (Exception e)
-            {
-                Messenger.Send(new ErrorMessage(
-                    _resourceService.GetString(ResourceName.FailedToAddFolderNotificationTitle), e.Message));
-                return;
-            }
-
-            if (addedFolder != null)
-            {
-                _timer.Debounce(() => IsLoading = _libraryService.IsLoadingMusic, TimeSpan.FromSeconds(1));
-            }
+            Messenger.Send(new NotificationMessage(NotificationLevel.Error, NotificationKind.FolderAddFailed, message: e.Message));
         }
     }
+
 }
+
